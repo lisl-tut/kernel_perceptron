@@ -48,7 +48,7 @@ class data_generator: # データ生成機
 ###########################################################
 
 class kernel_perceptron: # カーネルパーセプトロン
-    def __init__(self, data1, data2, kernel=None, epsilon=0.01):
+    def __init__(self, data1, data2, kernel=None, epsilon=0.1):
         # データを(x, y, label)の形式でまとめる
         label1 = -np.ones((len(data1),1))                     # class1のラベルを生成
         label2 = +np.ones((len(data2),1))                     # class2のラベルを生成
@@ -71,28 +71,36 @@ class kernel_perceptron: # カーネルパーセプトロン
         self.update_count = 0
 
     def update(self): # オンライン(データ1つ)で更新を行う関数
+        print('==== update count: %d ====' % self.update_count)
+        print('parameter')
+        print(self.param)
+
         idx = self.update_count % len(self.data)     # 今回使用するデータ番号を取得
         x, y, t_true = self.data[idx]                # 特徴量とラベルの答えを取り出す
         t_tilde = self.disc_func(x, y)               # 識別関数からラベルを推測
-        print(t_true, t_tilde)
         if t_true * t_tilde < 0:                     # 答えと推測値が異なる場合
             self.param[idx] += self.epsilon * t_true # パラメータを更新
         self.update_count += 1                       # 更新をカウント
 
     def disc_func(self, x, y): # 識別関数
+        #### Σ_k α_k*K(x, x_k) ####
         val = 0
         for k in range(len(self.data)):
             x_k, y_k = self.data[k][:2]                  # x_k
             alpha_k = self.param[k]                      # α_k
             val += alpha_k * self.kernel(x, y, x_k, y_k) # Σ_k α_k*K(x, x_k)
-        label = np.sign(val)                             # sign(Σ_k α_k*K(x, x_k))
+        #### sign(Σ_k α_k*K(x, x_k)) ####
+        label = np.array(val)
+        label[label>=0] = 1     # if val >= 0, label is  1
+        label[label<0] = -1     # if val <  0, label is -1
+
         return label
 
     def normal_kernel(self, x, y, x_k, y_k):
         return x*x_k + y*y_k
 
     def gauss_kernel(self, x, y, x_k, y_k):
-        sigma2 = 0.1
+        sigma2 = 0.01
         return np.exp(-1/(2*sigma2)*((x-x_k)**2+(y-y_k)**2))
 
 ###########################################################
@@ -105,8 +113,8 @@ def plot_figure(data1, data2, f):
     # 境界線の描画
     x_range = (0, 1)
     y_range = (0, 1)
-    x = np.linspace(x_range[0], x_range[1], 500)
-    y = np.linspace(y_range[0], y_range[1], 500)
+    x = np.linspace(x_range[0], x_range[1], 100)
+    y = np.linspace(y_range[0], y_range[1], 100)
     X, Y = np.meshgrid(x, y)
     Z = f(X, Y)
     plt.pcolor(X, Y, Z)
@@ -126,9 +134,8 @@ if __name__ == '__main__':
     dg = data_generator()
     data1, data2 = dg.get_data_type1(30)
     kp = kernel_perceptron(data1, data2)
-    for i in range(30):
+    for i in range(60):
         kp.update()
-        print(i)
         if i % 10 == 0:
             plot_figure(data1, data2, kp.disc_func)
 
