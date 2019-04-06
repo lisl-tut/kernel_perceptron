@@ -21,12 +21,14 @@ class data_generator: # データ生成機
         return np.array(data)
 
     def get_data_type1(self, num): # 線形分離可能なデータを生成する関数
+        x1, y1 = (0.30, 0.70)  # クラス1のデータ生成の中心
+        x2, y2 = (0.75, 0.35)  # クラス2のデータ生成の中心
         def disc_func(x, y):   # 真の境界面(識別関数)の方程式
-            return (0.20-0.80)*(x-(0.20+0.80)/2)+(0.75-0.30)*(y-(0.75+0.30)/2)
+            return (x1-x2)*(x-(x1+x2)/2)+(y1-y2)*(y-(y1+y2)/2)
         def bound_func1(x, y): # クラス1のデータの生成領域
-            return disc_func(x, y) > 0 and (x-0.20)**2+(y-0.75)**2 < 0.07
+            return disc_func(x, y) > 0 and (x-x1)**2+(y-y1)**2 < 0.07
         def bound_func2(x, y): # クラス2のデータの生成領域
-            return disc_func(x, y) < 0 and (x-0.80)**2+(y-0.30)**2 < 0.07
+            return disc_func(x, y) < 0 and (x-x2)**2+(y-y2)**2 < 0.07
 
         data1 = self.__sampling(bound_func1, num)   # クラス1のサンプリング
         data2 = self.__sampling(bound_func2, num)   # クラス2のサンプリング
@@ -87,6 +89,13 @@ class kernel_perceptron: # カーネルパーセプトロン
             self.param[idx] += self.epsilon * t_true # パラメータを更新
         self.update_count += 1                       # 更新をカウント
 
+    def is_all_correct(self): # すべてのデータが正しく識別されたかを確認する関数
+        for x, y, t_true in self.data:
+            t_tilde = self.disc_func(x, y)  # 識別関数からラベルを推測
+            if t_true * t_tilde < 0:
+                return False                # 答えと推測値が異なる場合
+        return True                         # 答えと推定値がすべて合っていた場合
+
     def disc_func(self, x, y): # 識別関数
         #### Σ_k α_k*K(x, x_k) ####
         val = 0
@@ -111,13 +120,10 @@ class kernel_perceptron: # カーネルパーセプトロン
 ###########################################################
 
 def plot_figure(data1, data2, f):
-    # データ点の描画
-    plt.scatter(data1.T[0], data1.T[1], marker='o', label='class 1')
-    plt.scatter(data2.T[0], data2.T[1], marker='x', label='class 2')
-
-    # 境界線の描画
     x_range = (0, 1)
     y_range = (0, 1)
+
+    # 境界線の描画
     x = np.linspace(x_range[0], x_range[1], 100)
     y = np.linspace(y_range[0], y_range[1], 100)
     X, Y = np.meshgrid(x, y)
@@ -125,11 +131,15 @@ def plot_figure(data1, data2, f):
     plt.pcolor(X, Y, Z)
     # plt.contour(X, Y, Z, [0]) # f(x, y) = 0 となる部分を描画する
 
+    # データ点の描画
+    plt.scatter(data1.T[0], data1.T[1], marker='o', label='class 1')
+    plt.scatter(data2.T[0], data2.T[1], marker='x', label='class 2')
+
     # 描画の設定，表示
     plt.xlim(x_range[0], x_range[1])
     plt.ylim(y_range[0], y_range[1])
     plt.legend()
-    plt.axis('equal')
+    # plt.axis('equal')
     plt.grid()
     plt.show()
 
@@ -137,10 +147,11 @@ def plot_figure(data1, data2, f):
 
 if __name__ == '__main__':
     dg = data_generator()
-    data1, data2 = dg.get_data_type1(30)
+    data1, data2 = dg.get_data_type1(1000)
     kp = kernel_perceptron(data1, data2)
-    for i in range(60):
+    for i in range(1000):
         kp.update()
         if i % 10 == 0:
             plot_figure(data1, data2, kp.disc_func)
-
+        if kp.is_all_correct() == True:
+            break
