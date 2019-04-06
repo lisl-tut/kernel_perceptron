@@ -83,11 +83,14 @@ class kernel_perceptron: # カーネルパーセプトロン
         print(self.param)
 
         idx = self.update_count % len(self.data)     # 今回使用するデータ番号を取得
+        self.update_count += 1                       # 更新が呼び出された回数をカウント
         x, y, t_true = self.data[idx]                # 特徴量とラベルの答えを取り出す
         t_tilde = self.disc_func(x, y)               # 識別関数からラベルを推測
         if t_true * t_tilde < 0:                     # 答えと推測値が異なる場合
             self.param[idx] += self.epsilon * t_true # パラメータを更新
-        self.update_count += 1                       # 更新をカウント
+            return True                              # 更新したらTrueを返却
+        else:
+            return False                             # 更新しなかったらFalseを返却
 
     def is_all_correct(self): # すべてのデータが正しく識別されたかを確認する関数
         x = self.data.T[0]
@@ -150,12 +153,13 @@ def plot_figure(data1, data2, f):
 
 if __name__ == '__main__':
     dg = data_generator()
-    data1, data2 = dg.get_data_type1(30)
-    kp = kernel_perceptron(data1, data2)
+    data1, data2 = dg.get_data_type2(100)
+    kp = kernel_perceptron(data1, data2, kernel='gauss')
+
     for i in range(1000):
-        kp.update()
-        if i % 10 == 0:
+        if kp.update() == True:
             plot_figure(data1, data2, kp.disc_func)
         if kp.is_all_correct() == True:
+            print('Finish!!')
             plot_figure(data1, data2, kp.disc_func)
             break
