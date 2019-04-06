@@ -1,6 +1,5 @@
-# このプログラムはパーセプトロンの動作を可視化するためのものです
-# x, y, labelの説明くらい書いたほうがいいかな
-#
+# カーネルパーセプトロンの実装プログラム
+# 更新の状況をアニメーションとして描画する
 
 import os
 import numpy as np
@@ -133,7 +132,7 @@ def plot_colormap(f, x_range=(0,1), y_range=(0,1)):
     y = np.linspace(y_range[0], y_range[1], 100)
     X, Y = np.meshgrid(x, y)
     Z = f(X, Y)
-    img = plt.pcolor(X, Y, Z)
+    img = plt.pcolor(X, Y, Z, cmap='summer')
     return img
 
 def plot_implicit(f, x_range=(0,1), y_range=(0,1)):
@@ -142,8 +141,7 @@ def plot_implicit(f, x_range=(0,1), y_range=(0,1)):
     X, Y = np.meshgrid(x, y)
     Z = f(X, Y)
     # f(x, y) = 0 となる部分を描画する
-    img = plt.contour(X, Y, Z, [0], colors=['magenta'], linestyles='dashed')
-    return img
+    plt.contour(X, Y, Z, [0], colors=['magenta'], linestyles='dashed')
 
 def show_figures(data1, data2, img_list, f_true=None, x_range=(0,1), y_range=(0,1)):
     # データ点の描画
