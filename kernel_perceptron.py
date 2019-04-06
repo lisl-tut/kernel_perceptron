@@ -48,6 +48,21 @@ class data_generator: # データ生成機
         self.disc_func = disc_func                  # 真の識別関数を保持
         return data1, data2
 
+    def get_data_type3(self, num): # 線形分離不可能なデータを生成する関数
+        a = 0.15
+        b = 0.85
+        def disc_func(x, y):   # 真の境界面(識別関数)の方程式
+            return ((x-a)**2+(y-a)**2)*((x-b)**2+(y-a)**2)*((x-a)**2+(y-b)**2)*((x-b)**2+(y-b)**2) - 0.0035
+        def bound_func1(x, y): # クラス1のデータの生成領域
+            return disc_func(x, y) > 0
+        def bound_func2(x, y): # クラス2のデータの生成領域
+            return disc_func(x, y) < 0
+
+        data1 = self.__sampling(bound_func1, num)   # クラス1のサンプリング
+        data2 = self.__sampling(bound_func2, num)   # クラス2のサンプリング
+        self.disc_func = disc_func                  # 真の識別関数を保持
+        return data1, data2
+
 ###########################################################
 
 class kernel_perceptron: # カーネルパーセプトロン
@@ -87,7 +102,7 @@ class kernel_perceptron: # カーネルパーセプトロン
             self.param[idx] += self.epsilon * t_true # 勾配法でパラメータを更新
             self.update_count += 1
             os.system('clear')
-            print('update count: %d' % self.update_count)
+            print('update count: %d (%d)' % (self.update_count, self.idx_count))
             print('parameter:')
             print(self.param)
             return True                              # 更新したらTrueを返却
@@ -170,7 +185,7 @@ def show_figures(data1, data2, img_list, f_true=None, x_range=(0,1), y_range=(0,
 
 if __name__ == '__main__':
     dg = data_generator()
-    data1, data2 = dg.get_data_type2(50)
+    data1, data2 = dg.get_data_type3(50)
     kp = kernel_perceptron(data1, data2, kernel='gauss')
 
     fig = plt.figure()
