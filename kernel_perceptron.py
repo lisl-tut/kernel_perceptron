@@ -2,9 +2,9 @@
 # x, y, labelの説明くらい書いたほうがいいかな
 #
 
-import sys
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 ###########################################################
 
@@ -125,41 +125,56 @@ class kernel_perceptron: # カーネルパーセプトロン
 
 ###########################################################
 
-def plot_figure(data1, data2, f):
-    x_range = (0, 1)
-    y_range = (0, 1)
-
-    # 境界線の描画
+def plot_colormap(f, x_range=(0,1), y_range=(0,1)):
     x = np.linspace(x_range[0], x_range[1], 100)
     y = np.linspace(y_range[0], y_range[1], 100)
     X, Y = np.meshgrid(x, y)
     Z = f(X, Y)
-    plt.pcolor(X, Y, Z)
-    # plt.contour(X, Y, Z, [0]) # f(x, y) = 0 となる部分を描画する
+    img = plt.pcolor(X, Y, Z)
+    return img
 
+def plot_implicit(f, x_range=(0,1), y_range=(0,1)):
+    x = np.linspace(x_range[0], x_range[1], 200)
+    y = np.linspace(y_range[0], y_range[1], 200)
+    X, Y = np.meshgrid(x, y)
+    Z = f(X, Y)
+    # f(x, y) = 0 となる部分を描画する
+    img = plt.contour(X, Y, Z, [0], colors=['pink'], linestyles='dashed')
+    return img
+
+def show_figures(data1, data2, img_list, x_range=(0,1), y_range=(0,1)):
     # データ点の描画
-    plt.scatter(data1.T[0], data1.T[1], marker='o', label='class 1')
-    plt.scatter(data2.T[0], data2.T[1], marker='x', label='class 2')
+    plt.scatter(data1.T[0], data1.T[1], c='red', marker='o', label='class 1')
+    plt.scatter(data2.T[0], data2.T[1], c='blue', marker='x', label='class 2')
 
-    # 描画の設定，表示
+    # 描画の設定
     plt.xlim(x_range[0], x_range[1])
     plt.ylim(y_range[0], y_range[1])
-    plt.legend()
     # plt.axis('equal')
+    plt.legend()
     plt.grid()
+
+    # 最後の画面で停止するように，最後のフレームのコピーを追加
+    img_list += [img_list[-1]] * 20
+
+    # アニメーションの生成，表示
+    ani = animation.ArtistAnimation(fig, img_list, interval=100)
     plt.show()
 
 ###########################################################
 
 if __name__ == '__main__':
     dg = data_generator()
-    data1, data2 = dg.get_data_type2(100)
+    data1, data2 = dg.get_data_type2(50)
     kp = kernel_perceptron(data1, data2, kernel='gauss')
 
+    fig = plt.figure()
+    img_list = []
     for i in range(1000):
         if kp.update() == True:
-            plot_figure(data1, data2, kp.disc_func)
+            img = plot_colormap(kp.disc_func)
+            # img = plot_implicit(kp.disc_func) # このままでは動かない
+            img_list.append([img])
         if kp.is_all_correct() == True:
-            print('Finish!!')
-            plot_figure(data1, data2, kp.disc_func)
             break
+    show_figures(data1, data2, img_list)
