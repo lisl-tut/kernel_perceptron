@@ -139,10 +139,10 @@ def plot_implicit(f, x_range=(0,1), y_range=(0,1)):
     X, Y = np.meshgrid(x, y)
     Z = f(X, Y)
     # f(x, y) = 0 となる部分を描画する
-    img = plt.contour(X, Y, Z, [0], colors=['pink'], linestyles='dashed')
+    img = plt.contour(X, Y, Z, [0], colors=['magenta'], linestyles='dashed')
     return img
 
-def show_figures(data1, data2, img_list, x_range=(0,1), y_range=(0,1)):
+def show_figures(data1, data2, img_list, f_true=None, x_range=(0,1), y_range=(0,1)):
     # データ点の描画
     plt.scatter(data1.T[0], data1.T[1], c='red', marker='o', label='class 1')
     plt.scatter(data2.T[0], data2.T[1], c='blue', marker='x', label='class 2')
@@ -153,6 +153,10 @@ def show_figures(data1, data2, img_list, x_range=(0,1), y_range=(0,1)):
     # plt.axis('equal')
     plt.legend()
     plt.grid()
+
+    # 真の境界を描画
+    if f_true != None:
+        plot_implicit(f_true)
 
     # 最後の画面で停止するように，最後のフレームのコピーを追加
     img_list += [img_list[-1]] * 20
@@ -173,8 +177,7 @@ if __name__ == '__main__':
     for i in range(1000):
         if kp.update() == True:
             img = plot_colormap(kp.disc_func)
-            # img = plot_implicit(kp.disc_func) # このままでは動かない
             img_list.append([img])
         if kp.is_all_correct() == True:
             break
-    show_figures(data1, data2, img_list)
+    show_figures(data1, data2, img_list, dg.disc_func)
