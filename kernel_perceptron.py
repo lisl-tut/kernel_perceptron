@@ -2,6 +2,7 @@
 # x, y, labelの説明くらい書いたほうがいいかな
 #
 
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -48,7 +49,7 @@ class data_generator: # データ生成機
 ###########################################################
 
 class kernel_perceptron: # カーネルパーセプトロン
-    def __init__(self, data1, data2, kernel=None, epsilon=0.1):
+    def __init__(self, data1, data2, kernel='normal', epsilon=0.1):
         # データを(x, y, label)の形式でまとめる
         label1 = -np.ones((len(data1),1))                     # class1のラベルを生成
         label2 = +np.ones((len(data2),1))                     # class2のラベルを生成
@@ -58,8 +59,12 @@ class kernel_perceptron: # カーネルパーセプトロン
         np.random.shuffle(self.data)                          # データをシャッフル
 
         # カーネル関数を登録
-        self.kernel = self.normal_kernel
-        # self.kernel = self.gauss_kernel
+        if kernel == 'normal':
+            self.kernel = self.normal_kernel
+        elif kernel == 'gauss':
+            self.kernel = self.gauss_kernel
+        else:
+            raise Exception('kernel argument is not proper')
 
         # パラメータ更新のステップサイズ(ラーニングレート)を登録
         self.epsilon = epsilon
