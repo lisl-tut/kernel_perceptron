@@ -51,7 +51,7 @@ class data_generator: # データ生成機
 ###########################################################
 
 class kernel_perceptron: # カーネルパーセプトロン
-    def __init__(self, data1, data2, kernel='normal', epsilon=0.1):
+    def __init__(self, data1, data2, kernel='normal', epsilon=0.05):
         # データを(x, y, label)の形式でまとめる
         label1 = -np.ones((len(data1),1))                     # class1のラベルを生成
         label2 = +np.ones((len(data2),1))                     # class2のラベルを生成
@@ -90,11 +90,14 @@ class kernel_perceptron: # カーネルパーセプトロン
         self.update_count += 1                       # 更新をカウント
 
     def is_all_correct(self): # すべてのデータが正しく識別されたかを確認する関数
-        for x, y, t_true in self.data:
-            t_tilde = self.disc_func(x, y)  # 識別関数からラベルを推測
-            if t_true * t_tilde < 0:
-                return False                # 答えと推測値が異なる場合
-        return True                         # 答えと推定値がすべて合っていた場合
+        x = self.data.T[0]
+        y = self.data.T[1]
+        t_true = self.data.T[2]
+        t_tilde = self.disc_func(x, y)
+        if all(t_true * t_tilde > 0) == True:
+            return True  # 答えとすべての推定値が合っていた場合
+        else:
+            return False # 答えといくつかの推測値が異なる場合
 
     def disc_func(self, x, y): # 識別関数
         #### Σ_k α_k*K(x, x_k) ####
@@ -111,11 +114,11 @@ class kernel_perceptron: # カーネルパーセプトロン
         return label
 
     def normal_kernel(self, x, y, x_k, y_k):
-        return x*x_k + y*y_k
+        return x*x_k + y*y_k # bug! 計算方法がおかしい，切片が存在しない
 
     def gauss_kernel(self, x, y, x_k, y_k):
         sigma2 = 0.01
-        return np.exp(-1/(2*sigma2)*((x-x_k)**2+(y-y_k)**2))
+        return np.exp(-1/(2*sigma2)*((x-x_k)**2+(y-y_k)**2)) # bug! normal_kernelのバグと同様
 
 ###########################################################
 
@@ -147,11 +150,12 @@ def plot_figure(data1, data2, f):
 
 if __name__ == '__main__':
     dg = data_generator()
-    data1, data2 = dg.get_data_type1(1000)
+    data1, data2 = dg.get_data_type1(30)
     kp = kernel_perceptron(data1, data2)
     for i in range(1000):
         kp.update()
         if i % 10 == 0:
             plot_figure(data1, data2, kp.disc_func)
         if kp.is_all_correct() == True:
+            plot_figure(data1, data2, kp.disc_func)
             break
