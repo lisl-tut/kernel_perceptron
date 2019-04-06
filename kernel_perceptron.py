@@ -147,7 +147,7 @@ def plot_colormap(f, x_range=(0,1), y_range=(0,1)):
     y = np.linspace(y_range[0], y_range[1], 100)
     X, Y = np.meshgrid(x, y)
     Z = f(X, Y)
-    img = plt.pcolor(X, Y, Z, cmap='summer')
+    img = plt.pcolor(X, Y, Z, cmap='viridis')
     return img
 
 def plot_implicit(f, x_range=(0,1), y_range=(0,1)):
@@ -160,8 +160,8 @@ def plot_implicit(f, x_range=(0,1), y_range=(0,1)):
 
 def show_figures(data1, data2, img_list, f_true=None, x_range=(0,1), y_range=(0,1)):
     # データ点の描画
-    plt.scatter(data1.T[0], data1.T[1], c='red', marker='o', label='class 1')
-    plt.scatter(data2.T[0], data2.T[1], c='blue', marker='x', label='class 2')
+    plt.scatter(data1.T[0], data1.T[1], c='red', marker='o', s=30, label='class 1')
+    plt.scatter(data2.T[0], data2.T[1], c='blue', marker='x', s=50, label='class 2')
 
     # 描画の設定
     plt.xlim(x_range[0], x_range[1])
