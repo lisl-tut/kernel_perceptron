@@ -2,6 +2,7 @@
 # x, y, labelの説明くらい書いたほうがいいかな
 #
 
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -68,26 +69,28 @@ class kernel_perceptron: # カーネルパーセプトロン
         else:
             raise Exception('kernel argument is not proper')
 
-        # パラメータ更新のステップサイズ(ラーニングレート)を登録
+        # 勾配法のステップサイズ(ラーニングレート)を登録
         self.epsilon = epsilon
 
         # パラメータはすべて0で初期化
         self.param = np.zeros(len(self.data))
 
         # パーセプトロンの更新回数を初期化
-        self.update_count = 0
+        self.idx_count = 0      # 更新に使用するデータ番号のカウンタ
+        self.update_count = 0   # 更新回数の確認のためのカウンタ
 
     def update(self): # オンライン(データ1つ)で更新を行う関数
-        print('==== update count: %d ====' % self.update_count)
-        print('parameter')
-        print(self.param)
-
-        idx = self.update_count % len(self.data)     # 今回使用するデータ番号を取得
-        self.update_count += 1                       # 更新が呼び出された回数をカウント
+        idx = self.idx_count % len(self.data)        # 使用するデータ番号を取得
+        self.idx_count += 1
         x, y, t_true = self.data[idx]                # 特徴量とラベルの答えを取り出す
         t_tilde = self.disc_func(x, y)               # 識別関数からラベルを推測
         if t_true * t_tilde < 0:                     # 答えと推測値が異なる場合
-            self.param[idx] += self.epsilon * t_true # パラメータを更新
+            self.param[idx] += self.epsilon * t_true # 勾配法でパラメータを更新
+            self.update_count += 1
+            os.system('clear')
+            print('update count: %d' % self.update_count)
+            print('parameter:')
+            print(self.param)
             return True                              # 更新したらTrueを返却
         else:
             return False                             # 更新しなかったらFalseを返却
@@ -179,5 +182,8 @@ if __name__ == '__main__':
             img = plot_colormap(kp.disc_func)
             img_list.append([img])
         if kp.is_all_correct() == True:
+            print('Complete')
             break
+    else:
+        print('Reached the repeat limit')
     show_figures(data1, data2, img_list, dg.disc_func)
