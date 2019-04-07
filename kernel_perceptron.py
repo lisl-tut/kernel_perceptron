@@ -21,8 +21,8 @@ class data_generator: # データ生成機
         return np.array(data)
 
     def get_data_type1(self, num): # 線形分離可能なデータを生成する関数
-        x1, y1 = (0.30, 0.70)  # クラス1のデータ生成の中心
-        x2, y2 = (0.75, 0.35)  # クラス2のデータ生成の中心
+        x1, y1 = (0.30, 0.35)  # クラス1のデータ生成の中心
+        x2, y2 = (0.75, 0.70)  # クラス2のデータ生成の中心
         def disc_func(x, y):   # 真の境界面(識別関数)の方程式
             return (x1-x2)*(x-(x1+x2)/2)+(y1-y2)*(y-(y1+y2)/2)
         def bound_func1(x, y): # クラス1のデータの生成領域
@@ -36,8 +36,10 @@ class data_generator: # データ生成機
         return data1, data2
 
     def get_data_type2(self, num): # 線形分離不可能なデータを生成する関数
+        a, b = (10, 10)
+        x1, y1 = (0.5, 0.5)
         def disc_func(x, y):   # 真の境界面(識別関数)の方程式
-            return -(10*(x-0.5))**3+2*(10*(x-0.5))**2+7*(10*(x-0.5))+(10*(y-0.5))**3-(10*(y-0.5))**2+(10*(y-0.5))
+            return -(a*(x-x1))**3+2*(a*(x-x1))**2+7*(a*(x-x1))+(b*(y-y1))**3-(b*(y-y1))**2+(b*(y-y1))
         def bound_func1(x, y): # クラス1のデータの生成領域
             return disc_func(x, y) > 0 and (x-0.5)**2+3*(y-0.5)**2-0.6*x*y-0.2 < 0
         def bound_func2(x, y): # クラス2のデータの生成領域
@@ -134,17 +136,17 @@ class kernel_perceptron: # カーネルパーセプトロン
         return label
 
     def normal_kernel(self, x, y, x_k, y_k):
-        return x*x_k + y*y_k # bug! 計算方法がおかしい，切片が存在しない
+        return 1 + x*x_k + y*y_k
 
     def gauss_kernel(self, x, y, x_k, y_k):
         sigma2 = 0.01
-        return np.exp(-1/(2*sigma2)*((x-x_k)**2+(y-y_k)**2)) # bug! normal_kernelのバグと同様
+        return np.exp(-1/(2*sigma2)*((x-x_k)**2+(y-y_k)**2))
 
 ###########################################################
 
 def plot_colormap(f, x_range=(0,1), y_range=(0,1)):
-    x = np.linspace(x_range[0], x_range[1], 100)
-    y = np.linspace(y_range[0], y_range[1], 100)
+    x = np.linspace(x_range[0], x_range[1], 50)
+    y = np.linspace(y_range[0], y_range[1], 50)
     X, Y = np.meshgrid(x, y)
     Z = f(X, Y)
     img = plt.pcolor(X, Y, Z, cmap='viridis')
@@ -156,9 +158,9 @@ def plot_implicit(f, x_range=(0,1), y_range=(0,1)):
     X, Y = np.meshgrid(x, y)
     Z = f(X, Y)
     # f(x, y) = 0 となる部分を描画する
-    plt.contour(X, Y, Z, [0], colors=['magenta'], linestyles='dashed')
+    plt.contour(X, Y, Z, [0], colors=['white'], linestyles='dashed')
 
-def show_figures(data1, data2, img_list, f_true=None, x_range=(0,1), y_range=(0,1)):
+def show_figures(data1, data2, img_list, fig, f_true=None, x_range=(0,1), y_range=(0,1)):
     # データ点の描画
     plt.scatter(data1.T[0], data1.T[1], c='red', marker='o', s=30, label='class 1')
     plt.scatter(data2.T[0], data2.T[1], c='blue', marker='x', s=50, label='class 2')
@@ -175,28 +177,35 @@ def show_figures(data1, data2, img_list, f_true=None, x_range=(0,1), y_range=(0,
         plot_implicit(f_true)
 
     # 最後の画面で停止するように，最後のフレームのコピーを追加
-    img_list += [img_list[-1]] * 20
+    img_list += [img_list[-1]] * 10
 
     # アニメーションの生成，表示
-    ani = animation.ArtistAnimation(fig, img_list, interval=100)
+    ani = animation.ArtistAnimation(fig, img_list, interval=500)
     plt.show()
 
 ###########################################################
 
 if __name__ == '__main__':
-    dg = data_generator()
-    data1, data2 = dg.get_data_type3(50)
-    kp = kernel_perceptron(data1, data2, kernel='gauss')
+    dg = data_generator()                                # データ生成器
+    data1, data2 = dg.get_data_type3(50)                 # データを生成
+    kp = kernel_perceptron(data1, data2, kernel='gauss') # カーネルパーセプトロン本体
 
+    # 更新とグラフ画像の生成
     fig = plt.figure()
     img_list = []
-    for i in range(1000):
-        if kp.update() == True:
-            img = plot_colormap(kp.disc_func)
-            img_list.append([img])
-        if kp.is_all_correct() == True:
-            print('Complete')
-            break
+    while len(img_list) < 100:
+        if kp.update() == True: # 更新したとき
+            # グラフ画像の生成
+            img = plot_colormap(kp.disc_func)                              # 画像生成
+            txt = plt.text(0, 1.02, 'update_count: '+str(kp.update_count)) # 番号の描画
+            img_list.append([img, txt])                                    # 画像の登録
+
+            # 全データの答え合わせ
+            if kp.is_all_correct() == True:
+                print('Complete')
+                break                      # すべて答えが合っていれば終了
     else:
-        print('Reached the repeat limit')
-    show_figures(data1, data2, img_list, dg.disc_func)
+        print('Reached the repeat limit')  # 繰り返し回数の上限に達したとき終了
+
+    # アニメーションの描画
+    show_figures(data1, data2, img_list, fig, f_true=dg.disc_func)
