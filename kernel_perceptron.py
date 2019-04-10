@@ -174,7 +174,7 @@ class kernel_perceptron_plotter:
         txt = plt.text(0, 1.02, 'update_count: '+str(update_count)) # 番号の描画
         self.img_list.append([img, txt])                            # 画像の登録
 
-    def show_figures(self, data1, data2, f_true=None):
+    def show_figures(self, data1, data2, f_true=False):
         # データ点の描画
         plt.scatter(data1.T[0], data1.T[1], c='red', marker='o', s=30, label='class 1')
         plt.scatter(data2.T[0], data2.T[1], c='blue', marker='x', s=50, label='class 2')
@@ -187,7 +187,7 @@ class kernel_perceptron_plotter:
         plt.grid()
 
         # 真の境界線を描画
-        if f_true != None:
+        if f_true == True:
             # f(x, y) = 0 となる部分を描画する
             resolution = 200
             x = np.linspace(self.x_range[0], self.x_range[1], resolution)
