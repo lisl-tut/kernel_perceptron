@@ -10,3 +10,6 @@
 
 # 使い方
 execute.shの中身を変更してプログラムの設定を行い，実行するだけ． 
+
+# 動作のサンプル画像
+![demo](https://raw.githubusercontent.com/wiki/lisl-tut/kernel_perceptron/media/sample.gif)
