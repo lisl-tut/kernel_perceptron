@@ -3,6 +3,8 @@
 
 import sys, os
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
@@ -201,7 +203,8 @@ class kernel_perceptron_plotter:
 
         # アニメーションの生成，表示
         ani = animation.ArtistAnimation(self.fig, self.img_list, interval=500)
-        plt.show()
+        ani.save('anim.gif', writer="imagemagick")
+        # plt.show()
 
 ###########################################################
 
