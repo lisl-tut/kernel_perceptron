@@ -1,7 +1,7 @@
 # カーネルパーセプトロンの実装プログラム
 # 更新の状況をアニメーションとして描画する
 
-import os
+import sys, os
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -11,6 +11,16 @@ import matplotlib.animation as animation
 class data_generator: # データ生成機
     def __init__(self):
         self.disc_func = None # データを生成したら，ここに識別関数を登録する
+
+    def get_data(self, type_, num):
+        if type_ == 1:
+            return self.get_data_type1(num)
+        elif type_ == 2:
+            return self.get_data_type2(num)
+        elif type_ == 3:
+            return self.get_data_type3(num)
+        else:
+            raise Exception('type augment is not proper')
 
     def __sampling(self, bound_func, num):
         data = []
@@ -81,6 +91,7 @@ class kernel_perceptron: # カーネルパーセプトロン
         if kernel == 'normal':
             self.kernel = self.normal_kernel
         elif kernel == 'gauss':
+            self.sigma2 = float(input('sigma^2: '))
             self.kernel = self.gauss_kernel
         else:
             raise Exception('kernel argument is not proper')
@@ -139,73 +150,100 @@ class kernel_perceptron: # カーネルパーセプトロン
         return 1 + x*x_k + y*y_k
 
     def gauss_kernel(self, x, y, x_k, y_k):
-        sigma2 = 0.01
-        return np.exp(-1/(2*sigma2)*((x-x_k)**2+(y-y_k)**2))
+        return np.exp(-1/(2*self.sigma2)*((x-x_k)**2+(y-y_k)**2))
 
 ###########################################################
 
-def plot_colormap(f, x_range=(0,1), y_range=(0,1)):
-    x = np.linspace(x_range[0], x_range[1], 50)
-    y = np.linspace(y_range[0], y_range[1], 50)
-    X, Y = np.meshgrid(x, y)
-    Z = f(X, Y)
-    img = plt.pcolor(X, Y, Z, cmap='viridis')
-    return img
+class kernel_perceptron_plotter:
+    def __init__(self, resolution=50):
+        self.x_range = (0,1)
+        self.y_range = (0,1)
+        x = np.linspace(self.x_range[0], self.x_range[1], resolution)
+        y = np.linspace(self.y_range[0], self.y_range[1], resolution)
+        self.X, self.Y = np.meshgrid(x, y)
 
-def plot_implicit(f, x_range=(0,1), y_range=(0,1)):
-    x = np.linspace(x_range[0], x_range[1], 200)
-    y = np.linspace(y_range[0], y_range[1], 200)
-    X, Y = np.meshgrid(x, y)
-    Z = f(X, Y)
-    # f(x, y) = 0 となる部分を描画する
-    plt.contour(X, Y, Z, [0], colors=['white'], linestyles='dashed')
+        self.fig = plt.figure()
+        self.img_list = []
 
-def show_figures(data1, data2, img_list, fig, f_true=None, x_range=(0,1), y_range=(0,1)):
-    # データ点の描画
-    plt.scatter(data1.T[0], data1.T[1], c='red', marker='o', s=30, label='class 1')
-    plt.scatter(data2.T[0], data2.T[1], c='blue', marker='x', s=50, label='class 2')
+    def fig_num(self):
+        return len(self.img_list)
 
-    # 描画の設定
-    plt.xlim(x_range[0], x_range[1])
-    plt.ylim(y_range[0], y_range[1])
-    # plt.axis('equal')
-    plt.legend()
-    plt.grid()
+    def take_a_shot(self, f, update_count):
+        Z = f(self.X, self.Y)
+        img = plt.pcolor(self.X, self.Y, Z, cmap='viridis')         # 画像の生成
+        txt = plt.text(0, 1.02, 'update_count: '+str(update_count)) # 番号の描画
+        self.img_list.append([img, txt])                            # 画像の登録
 
-    # 真の境界を描画
-    if f_true != None:
-        plot_implicit(f_true)
+    def show_figures(self, data1, data2, f_true=None):
+        # データ点の描画
+        plt.scatter(data1.T[0], data1.T[1], c='red', marker='o', s=30, label='class 1')
+        plt.scatter(data2.T[0], data2.T[1], c='blue', marker='x', s=50, label='class 2')
 
-    # 最後の画面で停止するように，最後のフレームのコピーを追加
-    img_list += [img_list[-1]] * 10
+        # 描画の設定
+        plt.xlim(self.x_range[0], self.x_range[1])
+        plt.ylim(self.y_range[0], self.y_range[1])
+        # plt.axis('equal')
+        plt.legend()
+        plt.grid()
 
-    # アニメーションの生成，表示
-    ani = animation.ArtistAnimation(fig, img_list, interval=500)
-    plt.show()
+        # 真の境界線を描画
+        if f_true != None:
+            # f(x, y) = 0 となる部分を描画する
+            resolution = 200
+            x = np.linspace(self.x_range[0], self.x_range[1], resolution)
+            y = np.linspace(self.y_range[0], self.y_range[1], resolution)
+            X, Y = np.meshgrid(x, y)
+            Z = f_true(X, Y)
+            plt.contour(X, Y, Z, [0], colors=['white'], linestyles='dashed')
+
+        # 最後の画面で停止するように，最後のフレームのコピーを追加
+        self.img_list += [self.img_list[-1]] * 10
+
+        # アニメーションの生成，表示
+        ani = animation.ArtistAnimation(self.fig, self.img_list, interval=500)
+        plt.show()
 
 ###########################################################
 
-if __name__ == '__main__':
-    dg = data_generator()                                # データ生成器
-    data1, data2 = dg.get_data_type3(50)                 # データを生成
-    kp = kernel_perceptron(data1, data2, kernel='gauss') # カーネルパーセプトロン本体
+def main(data_type, data_num, kernel_type, epsilon, resolution, show_f_true):
+    # データ生成
+    dg = data_generator()                                     # データ生成器
+    data1, data2 = dg.get_data(type_=data_type, num=data_num) # データを生成
+
+    # カーネルパーセプトロン
+    kp = kernel_perceptron(data1, data2, kernel=kernel_type, epsilon=epsilon)
+
+    # カーネルパーセプトロンの状態の描画器
+    plotter = kernel_perceptron_plotter(resolution=resolution)
 
     # 更新とグラフ画像の生成
-    fig = plt.figure()
-    img_list = []
-    while len(img_list) < 100:
+    while plotter.fig_num() < 100:
         if kp.update() == True: # 更新したとき
-            # グラフ画像の生成
-            img = plot_colormap(kp.disc_func)                              # 画像生成
-            txt = plt.text(0, 1.02, 'update_count: '+str(kp.update_count)) # 番号の描画
-            img_list.append([img, txt])                                    # 画像の登録
+            # グラフ画像の生成，保存
+            plotter.take_a_shot(kp.disc_func, kp.update_count)
 
             # 全データの答え合わせ
             if kp.is_all_correct() == True:
                 print('Complete')
-                break                      # すべて答えが合っていれば終了
+                break                       # すべて答えが合っていれば終了
     else:
-        print('Reached the repeat limit')  # 繰り返し回数の上限に達したとき終了
+        print('Reached the repeat limit')   # 繰り返し回数の上限に達したとき終了
 
     # アニメーションの描画
-    show_figures(data1, data2, img_list, fig, f_true=dg.disc_func)
+    if show_f_true == True:
+        plotter.show_figures(data1, data2, f_true=dg.disc_func)
+    else:
+        plotter.show_figures(data1, data2)
+
+
+###########################################################
+
+if __name__ == '__main__':
+    main(
+        data_type=int(sys.argv[1]),
+        data_num=int(sys.argv[2]),
+        kernel_type=str(sys.argv[3]),
+        epsilon=float(sys.argv[4]),
+        resolution=int(sys.argv[5]),
+        show_f_true=bool(sys.argv[6])
+    )
