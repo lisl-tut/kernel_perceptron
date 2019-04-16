@@ -170,13 +170,16 @@ class kernel_perceptron_plotter:
     def fig_num(self):
         return len(self.img_list)
 
-    def take_a_shot(self, f, update_count):
+    def take_a_shot(self, f, update_count=None):
         Z = f(self.X, self.Y)
         img = plt.pcolor(self.X, self.Y, Z, cmap='viridis')         # 画像の生成
-        txt = plt.text(0, 1.02, 'update_count: '+str(update_count)) # 番号の描画
-        self.img_list.append([img, txt])                            # 画像の登録
+        if update_count != None:
+            txt = plt.text(0, 1.02, 'update_count: '+str(update_count)) # 番号の描画
+            self.img_list.append([img, txt])                        # 画像, 番号の登録
+        else:
+            self.img_list.append([img])                             # 画像のみ登録
 
-    def show_figures(self, data1, data2, f_true=False):
+    def show_figures(self, data1, data2, f_true=None):
         # データ点の描画
         plt.scatter(data1.T[0], data1.T[1], c='red', marker='o', s=30, label='class 1')
         plt.scatter(data2.T[0], data2.T[1], c='blue', marker='x', s=50, label='class 2')
@@ -189,7 +192,7 @@ class kernel_perceptron_plotter:
         plt.grid()
 
         # 真の境界線を描画
-        if f_true == True:
+        if f_true != None:
             # f(x, y) = 0 となる部分を描画する
             resolution = 200
             x = np.linspace(self.x_range[0], self.x_range[1], resolution)
@@ -242,11 +245,12 @@ def main(data_type, data_num, kernel_type, epsilon, resolution, show_f_true):
 ###########################################################
 
 if __name__ == '__main__':
+    # np.random.seed(777)
     main(
         data_type=int(sys.argv[1]),
         data_num=int(sys.argv[2]),
         kernel_type=str(sys.argv[3]),
         epsilon=float(sys.argv[4]),
         resolution=int(sys.argv[5]),
-        show_f_true=bool(sys.argv[6])
+        show_f_true=False if sys.argv[6] == 'False' else True
     )
