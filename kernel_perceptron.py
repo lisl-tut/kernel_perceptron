@@ -206,7 +206,7 @@ class kernel_perceptron_plotter:
 
         # アニメーションの生成，表示
         ani = animation.ArtistAnimation(self.fig, self.img_list, interval=500)
-        ani.save('anim.gif', writer="imagemagick")
+        ani.save('anim.gif', writer="pillow")
         # plt.show()
 
 ###########################################################
