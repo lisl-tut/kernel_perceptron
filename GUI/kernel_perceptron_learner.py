@@ -3,11 +3,13 @@ import numpy as np
 import tkinter as tk                            # tk本体
 import tkinter.ttk as ttk                       # スタイル付きtk
 from tkinter import filedialog as tkFileDialog  # ファイルダイアログボックス
+from PIL import Image, ImageTk
 
 import kernel_perceptron as kp
 
 class kernel_perceptron_learner():
     def __init__(self):
+        #### #### tkウィンドウの設定 #### ####
         # ウィンドウの作成・設定
         self.win = tk.Tk()                # ウィンドウを作成
         win = self.win
@@ -49,6 +51,20 @@ class kernel_perceptron_learner():
         self.canvas.bind('<Button-1>', lambda event:self.click_left(event))   # 左クリックのイベントを設定
         self.canvas.bind('<Button-3>', lambda event:self.click_right(event))  # 右クリックのイベントを設定
         self.canvas.pack(padx=5, pady=5)
+
+        # 点の描画タイプ設定のラジオボタン
+        fr_p_type = tk.Frame(fr_canvas)
+        fr_p_type.pack(padx=5, pady=2, fill='x')
+        p_type_label = tk.Label(fr_p_type, text=' 描画タイプ ：')
+        p_type_label.grid(row=1, column=1)
+        self.p_type = tk.StringVar()                                    # 点の描画タイプの取得用変数
+        self.p_type.set('cat_and_dog')
+        p_type_rbtn1 = ttk.Radiobutton(fr_p_type, variable=self.p_type, value='point', text='点のみ',
+                                                    command=lambda:self.change_dot_type_to_NormalPoint())
+        p_type_rbtn1.grid(row=1, column=2)
+        p_type_rbtn2 = ttk.Radiobutton(fr_p_type, variable=self.p_type, value='cat_and_dog', text='犬と猫',
+                                                    command=lambda:self.change_dot_type_to_CatAndDog())
+        p_type_rbtn2.grid(row=1, column=3)
 
         #### #### 右側 #### ####
         # オプション設定
@@ -123,6 +139,16 @@ class kernel_perceptron_learner():
         opt5_rbtn3 = ttk.Radiobutton(fr_opt5, variable=self.opt5_resolution, value='200', text='200')
         opt5_rbtn3.grid(row=1, column=3)
 
+        # オプション6
+        fr_opt6 = tk.LabelFrame(fr_opt, relief='flat', text='【乱数】',)
+        fr_opt6.pack(padx=5, pady=4, fill='x')
+        self.opt6_random_seed = tk.StringVar()                          # 乱数の取得用変数
+        self.opt6_random_seed.set('fixed')
+        opt6_rbtn1 = ttk.Radiobutton(fr_opt6, variable=self.opt6_random_seed, value='fixed', text='無効')
+        opt6_rbtn1.grid(row=1, column=1)
+        opt6_rbtn2 = ttk.Radiobutton(fr_opt6, variable=self.opt6_random_seed, value='auto', text='有効')
+        opt6_rbtn2.grid(row=1, column=2)
+
         # 学習開始ボタン
         start_btn = ttk.Button(fr_r)
         start_btn.configure(text='学習開始', width=15, command=lambda:self.start_learning())
@@ -135,8 +161,25 @@ class kernel_perceptron_learner():
         self.logbox.configure(height=10, width=80)
         self.logbox.pack(padx=5, pady=5)
 
-        # すべての設定終了後の操作
+        #### #### すべての設定終了後の操作 #### ####
         self.init_canvas()      # キャンバス初期化，データセット初期化
+
+        # 点の描画用画像の読み込み
+        img_dog = Image.open("./image/dog.png")
+        img_dog = img_dog.resize((35, 35))
+        self.img_dog = ImageTk.PhotoImage(img_dog)
+        img_cat = Image.open("./image/cat.png")
+        img_cat = img_cat.resize((35, 35))
+        self.img_cat = ImageTk.PhotoImage(img_cat)
+
+        # 点の描画タイプを設定
+        if self.p_type.get() == 'cat_and_dog':
+            self.dot_A = self.dot_A_dog
+            self.dot_B = self.dot_B_cat
+        else:
+            self.dot_A = self.dot_A_point
+            self.dot_B = self.dot_B_point
+
         win.mainloop()          # ループに入る
 
     ###########################################################################
@@ -160,6 +203,10 @@ class kernel_perceptron_learner():
         self.data2 = np.empty((0,2), int)
 
         # グリッド線の描画
+        self.draw_grid()
+
+    # キャンバスにグリッド線を描画するメソッド
+    def draw_grid(self):
         center = self.canvas_size / 2
         for i in range(0, self.canvas_size, int(self.canvas_size/10)):
             if i != center:
@@ -170,34 +217,55 @@ class kernel_perceptron_learner():
                 self.canvas.create_line(i, 0, i, self.canvas_size, fill='black')
 
     # キャンバスに点（タイプA）を打つメソッド
-    def dot_point_A(self, x, y):
+    def dot_A_point(self, x, y):
         self.canvas.create_oval(x-5, y-5, x+5, y+5, fill='red', width=0)
 
     # キャンバスに点（タイプB）を打つメソッド
-    def dot_point_B(self, x, y):
+    def dot_B_point(self, x, y):
         self.canvas.create_oval(x-5, y-5, x+5, y+5, fill='blue', width=0)
 
     # キャンバスに点（タイプA:犬）を打つメソッド
-    def dot_dog(self, x, y):
-        pass
+    def dot_A_dog(self, x, y):
+        self.canvas.create_image(x, y, image=self.img_dog)
 
     # キャンバスに点（タイプB:猫）を打つメソッド
-    def dot_cat(self, x, y):
-        pass
+    def dot_B_cat(self, x, y):
+        self.canvas.create_image(x, y, image=self.img_cat)
+
+    # キャンバスの内容を再描画するメソッド
+    def redraw(self):
+        self.canvas.delete("all")   # 描画されているものをすべて削除
+        self.draw_grid()            # グリッド線を描画
+        for x, y in self.data1:     # data1を描画
+            self.dot_A(x, y)
+        for x, y in self.data2:     # data2を描画
+            self.dot_B(x, y)
 
     ###########################################################################
+
+    # 点の描画タイプを普通の点に変更するメソッド
+    def change_dot_type_to_NormalPoint(self):
+        self.dot_A = self.dot_A_point
+        self.dot_B = self.dot_B_point
+        self.redraw()                   # キャンバスを再描画
+
+    # 点の描画タイプを犬と猫に変更するメソッド
+    def change_dot_type_to_CatAndDog(self):
+        self.dot_A = self.dot_A_dog
+        self.dot_B = self.dot_B_cat
+        self.redraw()                   # キャンバスを再描画
 
     # 左クリック用：データ点（タイプA）を描画するメソッド
     def click_left(self, event):
         self.print_log('dot A:', str([event.x, event.y]))
-        self.dot_point_A(event.x, event.y)                                        # 点を描画
-        self.data1 = np.append(self.data1, [[event.x,event.y]], axis=0)           # 点をデータベースに追加
+        self.dot_A(event.x, event.y)                                        # 点を描画
+        self.data1 = np.append(self.data1, [[event.x,event.y]], axis=0)     # 点をデータベースに追加
 
     # 右クリック用：データ点（タイプB）を描画するメソッド
     def click_right(self, event):
         self.print_log('dot B:', str([event.x, event.y]))
-        self.dot_point_B(event.x, event.y)                                        # 点を描画
-        self.data2 = np.append(self.data2, [[event.x,event.y]], axis=0)           # 点をデータベースに追加
+        self.dot_B(event.x, event.y)                                        # 点を描画
+        self.data2 = np.append(self.data2, [[event.x,event.y]], axis=0)     # 点をデータベースに追加
 
     # 読み込みボタン用：データセットをロードするメソッド
     def load_data(self):
@@ -218,9 +286,9 @@ class kernel_perceptron_learner():
 
         # 描画
         for x, y in np_data1:
-            self.dot_point_A(x, y)
+            self.dot_A(x, y)
         for x, y in np_data2:
-            self.dot_point_B(x, y)
+            self.dot_B(x, y)
 
     # 保存ボタン用：描画されたデータ点をデータセットとして保存するメソッド
     def save_data(self):
@@ -246,19 +314,30 @@ class kernel_perceptron_learner():
             return # キャンセル
 
         # ログを出力
+        self.print_log('---------- Learning Start ----------')
         self.print_log('data num:',
                         'total =',      str(len(self.data1)+len(self.data2)) + ',',
                         '(A, B) =',     str((len(self.data1),len(self.data2))))
         self.print_log('option:',
                         'features =',   self.opt1_feature.get() + ',',
-                        'test =',       self.opt4_test_ratio.get() + ',',
                         'lr =',         self.opt3_lr.get() + ',',
-                        'resolution =', self.opt5_resolution.get())
-        self.print_log('Learning Start')
+                        'test =',       self.opt4_test_ratio.get() + ',',
+                        'resolution =', self.opt5_resolution.get() + ',',
+                        'random seed =', self.opt6_random_seed.get())
 
         # 座標系を通常の座標に変換
         np_data1 = self.transform_coordinate_system_from_canvas(self.data1)
         np_data2 = self.transform_coordinate_system_from_canvas(self.data2)
+
+        # 引数を指定
+        kwargs = {
+            'data1':np_data1,
+            'data2':np_data2,
+            'epsilon':float(self.opt3_lr.get()),
+            'test_ratio':float(self.opt4_test_ratio.get()),
+            'resolution':int(self.opt5_resolution.get()),
+            'random_seed':self.opt6_random_seed.get()
+        }
 
         # カーネルパーセプトロンのプログラムを実行
         if self.opt1_feature.get() == 'gauss':
@@ -268,22 +347,16 @@ class kernel_perceptron_learner():
             except Exception:
                 self.print_log('ERROR: σ^2の値が異常です')
                 return # キャンセル
-            kp.main(
-                np_data1, np_data2,
-                kernel_type='gauss',
-                epsilon=float(self.opt3_lr.get()),
-                test_ratio=float(self.opt4_test_ratio.get()),
-                resolution=int(self.opt5_resolution.get()),
-                sigma2=sigma2
-            )
+            kwargs['kernel_type'] = 'gauss'
+            kwargs['sigma2'] = sigma2
+            kp.main(**kwargs)                   # 実行
+
         elif self.opt1_feature.get() == '2d':
-            kp.main(
-                np_data1, np_data2,
-                kernel_type='nothing',
-                epsilon=float(self.opt3_lr.get()),
-                test_ratio=float(self.opt4_test_ratio.get()),
-                resolution=int(self.opt5_resolution.get())
-            )
+            kwargs['kernel_type'] = 'nothing'
+            kp.main(**kwargs)                   # 実行
+
+        # ログを出力
+        self.print_log('==== ==== Learning Finished ==== ====')
 
     ###########################################################################
 
@@ -321,37 +394,6 @@ class kernel_perceptron_learner():
 
         return np.vstack((x, y)).T
 
-
-class entry_dialog:
-    def __init__(self, root, msg, init_val=None):
-        self.win = tk.Tk()
-        win = self.win
-        win.title('入力フォーム')                # ウィンドウタイトルの設定
-        # win.geometry('200x200')                 # ウィンドウサイズを設定
-        win.resizable(0,0)                      # ウィンドウサイズの変更を不可に設定
-
-        label = tk.Label(win, text=msg)         # ラベルを生成
-        label.pack(padx=10, pady=8)             # ラベルを1段目に設置、padding設定
-        self.entry = tk.Entry(win)              # 入力フォームを生成
-        self.entry.pack(padx=10, pady=8)        # 入力フォームを2段目に設置、padding設定
-        btn = ttk.Button(win)                   # ボタンを生成
-        btn.configure(text='Enter', command=lambda:self.enter()) # ボタンの各種設定
-        btn.pack(padx=10, pady=8)               # ボタンを3段目に設置、padding設定
-
-        win.mainloop()
-
-    def enter(self):
-        self.val = self.entry.get()
-        self.win.quit()
-
-    def get(self):
-        return self.val
-
-    def tmp(self):
-        # データ数を選択
-        ed = entry_dialog(self.win, 'OK???')
-        print(ed.get())
-        print('aaaaa')
 
 if __name__ == '__main__':
     kp = kernel_perceptron_learner()
