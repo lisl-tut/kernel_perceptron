@@ -42,8 +42,6 @@ class kernel_perceptron_learner():
         clear_btn.configure(text='クリア', width=5, command=lambda:self.clear_data())
         clear_btn.pack(side='left')
         clear_btn = ttk.Button(fr_sw)
-        clear_btn.configure(text='更新', width=5, command=lambda:print('update clicked'))
-        clear_btn.pack(padx=10, side='left')
 
         # キャンバス
         self.canvas_size = 500
@@ -89,40 +87,28 @@ class kernel_perceptron_learner():
         self.opt1_featureGauss_sigma2 = tk.Entry(fr_opt1)               # 特徴量の式
         self.opt1_featureGauss_sigma2.grid(row=3, column=3)
 
-        # オプション2
-        fr_opt2 = tk.LabelFrame(fr_opt, relief='flat', text='【データ数】',)
-        fr_opt2.pack(padx=5, pady=4, fill='x')
-        opt2_specified_data_num_label = tk.Label(fr_opt2, text=' n = ')     # 指定データ数のラベル
-        opt2_specified_data_num_label.grid(row=1, column=1, sticky=tk.E)
-        self.opt2_specified_data_num = tk.Entry(fr_opt2, width=5)           # 指定データ数
-        self.opt2_specified_data_num.grid(row=1, column=2)
-        self.opt2_total_data_num = tk.StringVar()                           # 総データ数の取得用変数
-        self.opt2_total_data_num.set(' (max=0)')
-        opt2_total_data_nu_label = tk.Label(fr_opt2, textvariable=self.opt2_total_data_num) # 総データ数のラベル
-        opt2_total_data_nu_label.grid(row=1, column=3)
-
         # オプション3
-        fr_opt3 = tk.LabelFrame(fr_opt, relief='flat', text='【テストデータの割合】',)
+        fr_opt3 = tk.LabelFrame(fr_opt, relief='flat', text='【ラーニングレート】',)
         fr_opt3.pack(padx=5, pady=4, fill='x')
-        self.opt3_test_ratio = tk.StringVar()                           # テストデータの割合の取得用変数
-        self.opt3_test_ratio.set('0.25')
-        opt3_rbtn1 = ttk.Radiobutton(fr_opt3, variable=self.opt3_test_ratio, value='0.1', text='10％')
+        self.opt3_lr = tk.StringVar()                                   # ラーニングレートの取得用変数
+        self.opt3_lr.set('0.10')
+        opt3_rbtn1 = ttk.Radiobutton(fr_opt3, variable=self.opt3_lr, value='0.50', text='0.50')
         opt3_rbtn1.grid(row=1, column=1)
-        opt3_rbtn2 = ttk.Radiobutton(fr_opt3, variable=self.opt3_test_ratio, value='0.25', text='25％')
+        opt3_rbtn2 = ttk.Radiobutton(fr_opt3, variable=self.opt3_lr, value='0.10', text='0.10')
         opt3_rbtn2.grid(row=1, column=2)
-        opt3_rbtn3 = ttk.Radiobutton(fr_opt3, variable=self.opt3_test_ratio, value='0.5', text='50％')
+        opt3_rbtn3 = ttk.Radiobutton(fr_opt3, variable=self.opt3_lr, value='0.01', text='0.01')
         opt3_rbtn3.grid(row=1, column=3)
 
         # オプション4
-        fr_opt4 = tk.LabelFrame(fr_opt, relief='flat', text='【ラーニングレート】',)
+        fr_opt4 = tk.LabelFrame(fr_opt, relief='flat', text='【テストデータの割合】',)
         fr_opt4.pack(padx=5, pady=4, fill='x')
-        self.opt4_lr = tk.StringVar()                                   # ラーニングレートの取得用変数
-        self.opt4_lr.set('0.10')
-        opt4_rbtn1 = ttk.Radiobutton(fr_opt4, variable=self.opt4_lr, value='0.50', text='0.50')
+        self.opt4_test_ratio = tk.StringVar()                           # テストデータの割合の取得用変数
+        self.opt4_test_ratio.set('0.25')
+        opt4_rbtn1 = ttk.Radiobutton(fr_opt4, variable=self.opt4_test_ratio, value='0.1', text='10％')
         opt4_rbtn1.grid(row=1, column=1)
-        opt4_rbtn2 = ttk.Radiobutton(fr_opt4, variable=self.opt4_lr, value='0.10', text='0.10')
+        opt4_rbtn2 = ttk.Radiobutton(fr_opt4, variable=self.opt4_test_ratio, value='0.25', text='25％')
         opt4_rbtn2.grid(row=1, column=2)
-        opt4_rbtn3 = ttk.Radiobutton(fr_opt4, variable=self.opt4_lr, value='0.01', text='0.01')
+        opt4_rbtn3 = ttk.Radiobutton(fr_opt4, variable=self.opt4_test_ratio, value='0.5', text='50％')
         opt4_rbtn3.grid(row=1, column=3)
 
         # オプション5
@@ -170,10 +156,8 @@ class kernel_perceptron_learner():
         self.canvas.delete("all")
 
         # データセットの初期化
-        self.data1_all = np.empty((0,2), int)   # すべてのデータ
-        self.data2_all = np.empty((0,2), int)   # すべてのデータ
-        self.data1 = np.empty((0,2), int)       # サンプリングされたあとのデータ
-        self.data2 = np.empty((0,2), int)       # サンプリングされたあとのデータ
+        self.data1 = np.empty((0,2), int)
+        self.data2 = np.empty((0,2), int)
 
         # グリッド線の描画
         center = self.canvas_size / 2
@@ -184,10 +168,6 @@ class kernel_perceptron_learner():
             else:
                 self.canvas.create_line(0, i, self.canvas_size, i, fill='black')
                 self.canvas.create_line(i, 0, i, self.canvas_size, fill='black')
-
-        # データ点総数を更新
-        self.opt2_total_data_num.set(' (max='+str(self.get_total_data_num())+')')
-
 
     # キャンバスに点（タイプA）を打つメソッド
     def dot_point_A(self, x, y):
@@ -212,14 +192,12 @@ class kernel_perceptron_learner():
         self.print_log('dot A:', str([event.x, event.y]))
         self.dot_point_A(event.x, event.y)                                        # 点を描画
         self.data1 = np.append(self.data1, [[event.x,event.y]], axis=0)           # 点をデータベースに追加
-        self.opt2_total_data_num.set(' (max='+str(self.get_total_data_num())+')') # データ点総数を更新
 
     # 右クリック用：データ点（タイプB）を描画するメソッド
     def click_right(self, event):
         self.print_log('dot B:', str([event.x, event.y]))
         self.dot_point_B(event.x, event.y)                                        # 点を描画
         self.data2 = np.append(self.data2, [[event.x,event.y]], axis=0)           # 点をデータベースに追加
-        self.opt2_total_data_num.set(' (max='+str(self.get_total_data_num())+')') # データ点総数を更新
 
     # 読み込みボタン用：データセットをロードするメソッド
     def load_data(self):
@@ -237,7 +215,6 @@ class kernel_perceptron_learner():
         self.init_canvas()
         self.data1 = np_data1
         self.data2 = np_data2
-        self.opt2_total_data_num.set(' (max='+str(self.get_total_data_num())+')') # データ点総数を更新
 
         # 描画
         for x, y in np_data1:
@@ -264,32 +241,18 @@ class kernel_perceptron_learner():
 
     # 学習開始ボタン用：カーネルパーセプトロンの学習を開始するメソッド
     def start_learning(self):
-        # 総データ数・指定データ数が異常でないかを確認
-        if self.get_total_data_num() == 0:
+        # 総データ数が異常でないかを確認
+        if len(self.data1) + len(self.data2) == 0:
             return # キャンセル
-        try:
-            specified_data_num = int(self.opt2_specified_data_num.get())
-            if specified_data_num <= 0:
-                raise Exception()
-        except Exception:
-            self.print_log('ERROR: データ数の値が異常です')
-            return # キャンセル
-
-        # 指定データ数に総データ数を変更
-
-        self.print_log('サンプリングしました')
-        data1 = np.random.permutation(self.data1)        # データをシャッフル
-        data2 = np.random.permutation(self.data2)        # データをシャッフル
-
 
         # ログを出力
         self.print_log('data num:',
-                        'total =',      self.opt2_specified_data_num.get() + ',',
+                        'total =',      str(len(self.data1)+len(self.data2)) + ',',
                         '(A, B) =',     str((len(self.data1),len(self.data2))))
         self.print_log('option:',
                         'features =',   self.opt1_feature.get() + ',',
-                        'test =',       self.opt3_test_ratio.get() + ',',
-                        'lr =',         self.opt4_lr.get() + ',',
+                        'test =',       self.opt4_test_ratio.get() + ',',
+                        'lr =',         self.opt3_lr.get() + ',',
                         'resolution =', self.opt5_resolution.get())
         self.print_log('Learning Start')
 
@@ -308,8 +271,8 @@ class kernel_perceptron_learner():
             kp.main(
                 np_data1, np_data2,
                 kernel_type='gauss',
-                epsilon=float(self.opt4_lr.get()),
-                test_ratio=float(self.opt3_test_ratio.get()),
+                epsilon=float(self.opt3_lr.get()),
+                test_ratio=float(self.opt4_test_ratio.get()),
                 resolution=int(self.opt5_resolution.get()),
                 sigma2=sigma2
             )
@@ -317,16 +280,12 @@ class kernel_perceptron_learner():
             kp.main(
                 np_data1, np_data2,
                 kernel_type='nothing',
-                epsilon=float(self.opt4_lr.get()),
-                test_ratio=float(self.opt3_test_ratio.get()),
+                epsilon=float(self.opt3_lr.get()),
+                test_ratio=float(self.opt4_test_ratio.get()),
                 resolution=int(self.opt5_resolution.get())
             )
 
     ###########################################################################
-
-    # データの総数を求めるメソッド
-    def get_total_data_num(self):
-        return len(self.data1) + len(self.data2)
 
     # 普通の座標からキャンバス用の座標に変換する
     def transform_coordinate_system_for_canvas(self, points):
