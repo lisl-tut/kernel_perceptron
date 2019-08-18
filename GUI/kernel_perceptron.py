@@ -5,6 +5,7 @@ import sys, os
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
 ###########################################################
 
@@ -126,15 +127,21 @@ class border_plotter:
         else:
             self.img_list.append([img])                     # 画像のみ登録
 
-    def show_figures(self, data1, data2):
+    def show_figures(self, data1, data2, dot_type):
         # データ点の描画
-        plt.scatter(data1.T[0], data1.T[1], c='red', marker='o', s=30, label='class 1')
-        plt.scatter(data2.T[0], data2.T[1], c='blue', marker='x', s=50, label='class 2')
+        if dot_type == 'cat_and_dog':
+            # 画像で描画
+            self.im_scatter(data1.T[0], data1.T[1], './image/dog.png', zoom=0.10)
+            self.im_scatter(data2.T[0], data2.T[1], './image/cat.png', zoom=0.10)
+        else:
+            # 通常の点で描画
+            plt.scatter(data1.T[0], data1.T[1], c='red', marker='o', s=30, label='class 1')
+            plt.scatter(data2.T[0], data2.T[1], c='blue', marker='x', s=50, label='class 2')
+            plt.legend()
 
         # 描画の設定
         plt.xlim(self.x_range[0], self.x_range[1])
         plt.ylim(self.y_range[0], self.y_range[1])
-        plt.legend()
         plt.grid()
 
         # 最後の画面で停止するように，最後のフレームのコピーを追加
@@ -145,6 +152,18 @@ class border_plotter:
         # ani.save('anim.gif', writer="pillow")
         plt.show()
 
+    # 画像版のscatter
+    def im_scatter(self, x, y, image, ax=None, zoom=1):
+        if ax is None:
+            ax = plt.gca()
+        image = plt.imread(image)
+        im = OffsetImage(image, zoom=zoom)
+        artists = []
+        for x0, y0 in zip(x, y):
+            ab = AnnotationBbox(im, (x0, y0), xycoords='data', frameon=False)
+            artists.append(ax.add_artist(ab))
+        return artists
+
 ###########################################################
 
 def split_train_and_test(data, test_ratio):
@@ -154,7 +173,7 @@ def split_train_and_test(data, test_ratio):
     train_data = data[test_num:]            # 訓練データを取り出す
     return train_data, test_data
 
-def main(data1, data2, kernel_type, epsilon, test_ratio, resolution, random_seed, **kwargs):
+def main(data1, data2, kernel_type, epsilon, test_ratio, resolution, random_seed, dot_type, **kwargs):
     # シードを設定
     if random_seed == 'fixed':
         np.random.seed(777)
@@ -181,7 +200,7 @@ def main(data1, data2, kernel_type, epsilon, test_ratio, resolution, random_seed
         print('Reached the repeat limit')   # 繰り返し回数の上限に達したとき
 
     # アニメーションの描画
-    plotter.show_figures(train_data1, train_data2)
+    plotter.show_figures(train_data1, train_data2, dot_type)
 
     acc = kp.test(test_data1, test_data2)
     print('acc:', acc)

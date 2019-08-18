@@ -315,6 +315,7 @@ class kernel_perceptron_learner():
 
         # ログを出力
         self.print_log('---------- Learning Start ----------')
+        self.print_log('dot type =',    self.p_type.get())
         self.print_log('data num:',
                         'total =',      str(len(self.data1)+len(self.data2)) + ',',
                         '(A, B) =',     str((len(self.data1),len(self.data2))))
@@ -336,7 +337,8 @@ class kernel_perceptron_learner():
             'epsilon':float(self.opt3_lr.get()),
             'test_ratio':float(self.opt4_test_ratio.get()),
             'resolution':int(self.opt5_resolution.get()),
-            'random_seed':self.opt6_random_seed.get()
+            'random_seed':self.opt6_random_seed.get(),
+            'dot_type':self.p_type.get()
         }
 
         # カーネルパーセプトロンのプログラムを実行
