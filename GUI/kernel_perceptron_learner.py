@@ -55,14 +55,16 @@ class kernel_perceptron_learner():
         # 点の描画タイプ設定のラジオボタン
         fr_p_type = tk.Frame(fr_canvas)
         fr_p_type.pack(padx=5, pady=2, fill='x')
+        p_type_label = tk.Label(fr_p_type, text=' 描画タイプ ：')
+        p_type_label.grid(row=1, column=1)
         self.p_type = tk.StringVar()                                    # 点の描画タイプの取得用変数
         self.p_type.set('cat_and_dog')
         p_type_rbtn1 = ttk.Radiobutton(fr_p_type, variable=self.p_type, value='point', text='点のみ',
                                                     command=lambda:self.change_dot_type_to_NormalPoint())
-        p_type_rbtn1.grid(row=1, column=1)
+        p_type_rbtn1.grid(row=1, column=2)
         p_type_rbtn2 = ttk.Radiobutton(fr_p_type, variable=self.p_type, value='cat_and_dog', text='犬と猫',
                                                     command=lambda:self.change_dot_type_to_CatAndDog())
-        p_type_rbtn2.grid(row=1, column=2)
+        p_type_rbtn2.grid(row=1, column=3)
 
         #### #### 右側 #### ####
         # オプション設定
