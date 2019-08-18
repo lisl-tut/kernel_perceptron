@@ -123,6 +123,16 @@ class kernel_perceptron_learner():
         opt5_rbtn3 = ttk.Radiobutton(fr_opt5, variable=self.opt5_resolution, value='200', text='200')
         opt5_rbtn3.grid(row=1, column=3)
 
+        # オプション6
+        fr_opt6 = tk.LabelFrame(fr_opt, relief='flat', text='【乱数】',)
+        fr_opt6.pack(padx=5, pady=4, fill='x')
+        self.opt6_random_seed = tk.StringVar()                          # 乱数の取得用変数
+        self.opt6_random_seed.set('fixed')
+        opt6_rbtn1 = ttk.Radiobutton(fr_opt6, variable=self.opt6_random_seed, value='fixed', text='無効')
+        opt6_rbtn1.grid(row=1, column=1)
+        opt6_rbtn2 = ttk.Radiobutton(fr_opt6, variable=self.opt6_random_seed, value='auto', text='有効')
+        opt6_rbtn2.grid(row=1, column=2)
+
         # 学習開始ボタン
         start_btn = ttk.Button(fr_r)
         start_btn.configure(text='学習開始', width=15, command=lambda:self.start_learning())
@@ -246,19 +256,30 @@ class kernel_perceptron_learner():
             return # キャンセル
 
         # ログを出力
+        self.print_log('---------- Learning Start ----------')
         self.print_log('data num:',
                         'total =',      str(len(self.data1)+len(self.data2)) + ',',
                         '(A, B) =',     str((len(self.data1),len(self.data2))))
         self.print_log('option:',
                         'features =',   self.opt1_feature.get() + ',',
-                        'test =',       self.opt4_test_ratio.get() + ',',
                         'lr =',         self.opt3_lr.get() + ',',
-                        'resolution =', self.opt5_resolution.get())
-        self.print_log('Learning Start')
+                        'test =',       self.opt4_test_ratio.get() + ',',
+                        'resolution =', self.opt5_resolution.get() + ',',
+                        'random seed =', self.opt6_random_seed.get())
 
         # 座標系を通常の座標に変換
         np_data1 = self.transform_coordinate_system_from_canvas(self.data1)
         np_data2 = self.transform_coordinate_system_from_canvas(self.data2)
+
+        # 引数を指定
+        kwargs = {
+            'data1':np_data1,
+            'data2':np_data2,
+            'epsilon':float(self.opt3_lr.get()),
+            'test_ratio':float(self.opt4_test_ratio.get()),
+            'resolution':int(self.opt5_resolution.get()),
+            'random_seed':self.opt6_random_seed.get()
+        }
 
         # カーネルパーセプトロンのプログラムを実行
         if self.opt1_feature.get() == 'gauss':
@@ -268,22 +289,16 @@ class kernel_perceptron_learner():
             except Exception:
                 self.print_log('ERROR: σ^2の値が異常です')
                 return # キャンセル
-            kp.main(
-                np_data1, np_data2,
-                kernel_type='gauss',
-                epsilon=float(self.opt3_lr.get()),
-                test_ratio=float(self.opt4_test_ratio.get()),
-                resolution=int(self.opt5_resolution.get()),
-                sigma2=sigma2
-            )
+            kwargs['kernel_type'] = 'gauss'
+            kwargs['sigma2'] = sigma2
+            kp.main(**kwargs)                   # 実行
+
         elif self.opt1_feature.get() == '2d':
-            kp.main(
-                np_data1, np_data2,
-                kernel_type='nothing',
-                epsilon=float(self.opt3_lr.get()),
-                test_ratio=float(self.opt4_test_ratio.get()),
-                resolution=int(self.opt5_resolution.get())
-            )
+            kwargs['kernel_type'] = 'nothing'
+            kp.main(**kwargs)                   # 実行
+
+        # ログを出力
+        self.print_log('==== ==== Learning Finished ==== ====')
 
     ###########################################################################
 
@@ -321,37 +336,6 @@ class kernel_perceptron_learner():
 
         return np.vstack((x, y)).T
 
-
-class entry_dialog:
-    def __init__(self, root, msg, init_val=None):
-        self.win = tk.Tk()
-        win = self.win
-        win.title('入力フォーム')                # ウィンドウタイトルの設定
-        # win.geometry('200x200')                 # ウィンドウサイズを設定
-        win.resizable(0,0)                      # ウィンドウサイズの変更を不可に設定
-
-        label = tk.Label(win, text=msg)         # ラベルを生成
-        label.pack(padx=10, pady=8)             # ラベルを1段目に設置、padding設定
-        self.entry = tk.Entry(win)              # 入力フォームを生成
-        self.entry.pack(padx=10, pady=8)        # 入力フォームを2段目に設置、padding設定
-        btn = ttk.Button(win)                   # ボタンを生成
-        btn.configure(text='Enter', command=lambda:self.enter()) # ボタンの各種設定
-        btn.pack(padx=10, pady=8)               # ボタンを3段目に設置、padding設定
-
-        win.mainloop()
-
-    def enter(self):
-        self.val = self.entry.get()
-        self.win.quit()
-
-    def get(self):
-        return self.val
-
-    def tmp(self):
-        # データ数を選択
-        ed = entry_dialog(self.win, 'OK???')
-        print(ed.get())
-        print('aaaaa')
 
 if __name__ == '__main__':
     kp = kernel_perceptron_learner()

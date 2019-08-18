@@ -154,7 +154,11 @@ def split_train_and_test(data, test_ratio):
     train_data = data[test_num:]            # 訓練データを取り出す
     return train_data, test_data
 
-def main(data1, data2, kernel_type, epsilon, test_ratio, resolution, **kwargs):
+def main(data1, data2, kernel_type, epsilon, test_ratio, resolution, random_seed, **kwargs):
+    # シードを設定
+    if random_seed == 'fixed':
+        np.random.seed(777)
+
     # 訓練データとテストデータに分ける
     train_data1, test_data1 = split_train_and_test(data1, test_ratio)
     train_data2, test_data2 = split_train_and_test(data2, test_ratio)
