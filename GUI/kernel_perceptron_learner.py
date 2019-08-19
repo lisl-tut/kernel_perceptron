@@ -103,18 +103,6 @@ class kernel_perceptron_learner():
         self.opt1_featureGauss_sigma2 = tk.Entry(fr_opt1)               # 特徴量の式
         self.opt1_featureGauss_sigma2.grid(row=3, column=3)
 
-        # オプション3
-        fr_opt3 = tk.LabelFrame(fr_opt, relief='flat', text='【ラーニングレート】',)
-        fr_opt3.pack(padx=5, pady=4, fill='x')
-        self.opt3_lr = tk.StringVar()                                   # ラーニングレートの取得用変数
-        self.opt3_lr.set('0.10')
-        opt3_rbtn1 = ttk.Radiobutton(fr_opt3, variable=self.opt3_lr, value='0.50', text='0.50')
-        opt3_rbtn1.grid(row=1, column=1)
-        opt3_rbtn2 = ttk.Radiobutton(fr_opt3, variable=self.opt3_lr, value='0.10', text='0.10')
-        opt3_rbtn2.grid(row=1, column=2)
-        opt3_rbtn3 = ttk.Radiobutton(fr_opt3, variable=self.opt3_lr, value='0.01', text='0.01')
-        opt3_rbtn3.grid(row=1, column=3)
-
         # オプション4
         fr_opt4 = tk.LabelFrame(fr_opt, relief='flat', text='【テストデータの割合】',)
         fr_opt4.pack(padx=5, pady=4, fill='x')
@@ -318,13 +306,12 @@ class kernel_perceptron_learner():
         self.print_log('dot type =',    self.p_type.get())
         self.print_log('data num:',
                         'total =',      str(len(self.data1)+len(self.data2)) + ',',
-                        '(A, B) =',     str((len(self.data1),len(self.data2))))
+                        '(A, B) =',     str((len(self.data1),len(self.data2))) )
         self.print_log('option:',
                         'features =',   self.opt1_feature.get() + ',',
-                        'lr =',         self.opt3_lr.get() + ',',
                         'test =',       self.opt4_test_ratio.get() + ',',
                         'resolution =', self.opt5_resolution.get() + ',',
-                        'random seed =', self.opt6_random_seed.get())
+                        'random seed =', self.opt6_random_seed.get() )
 
         # 座標系を通常の座標に変換
         np_data1 = self.transform_coordinate_system_from_canvas(self.data1)
@@ -334,7 +321,6 @@ class kernel_perceptron_learner():
         kwargs = {
             'data1':np_data1,
             'data2':np_data2,
-            'epsilon':float(self.opt3_lr.get()),
             'test_ratio':float(self.opt4_test_ratio.get()),
             'resolution':int(self.opt5_resolution.get()),
             'random_seed':self.opt6_random_seed.get(),
@@ -349,16 +335,18 @@ class kernel_perceptron_learner():
             except Exception:
                 self.print_log('ERROR: σ^2の値が異常です')
                 return # キャンセル
-            kwargs['kernel_type'] = 'gauss'
+            kwargs['feature'] = 'gauss'
             kwargs['sigma2'] = sigma2
-            kp.main(**kwargs)                   # 実行
+            result = kp.main(**kwargs)          # 実行
 
         elif self.opt1_feature.get() == '2d':
-            kwargs['kernel_type'] = 'nothing'
-            kp.main(**kwargs)                   # 実行
+            kwargs['feature'] = '2d'
+            result = kp.main(**kwargs)          # 実行
 
-        # ログを出力
+        # 結果のログを出力
         self.print_log('==== ==== Learning Finished ==== ====')
+        self.print_log(result['msg'])
+        self.print_log('Accuracy: %.2f%%' % (result['accuracy']*100))
 
     ###########################################################################
 
