@@ -16,15 +16,17 @@ class kernel_perceptron_learner():
         win.title('カーネルパーセプトロン') # ウィンドウタイトルの設定
 
         # 全体のフォントの設定
-        win.option_add("*Font", "TkDefaultFont 12")
+        win.option_add('*Font', 'TkDefaultFont 12')
         ttk.Style().configure('TRadiobutton', font=('TkDefaultFont', 12), bg='white')
         ttk.Style().configure('TButton', font=('TkDefaultFont', 12), bg='white')
 
-        # 左右のフレーム
+        # 左・中・右のフレーム
         fr_l = tk.Frame(win)
-        fr_l.pack(padx=5, pady=5, fill='y', side='left')
+        fr_l.pack(padx=2, pady=5, fill='y', side='left')
+        fr_c = tk.Frame(win)
+        fr_c.pack(padx=2, pady=5, fill='y', side='left')
         fr_r = tk.Frame(win)
-        fr_r.pack(padx=5, pady=5, fill='y', side='left')
+        fr_r.pack(padx=2, pady=5, fill='y', side='left')
 
         #### #### 左側 #### ####
         # キャンバス用のフレーム
@@ -46,7 +48,7 @@ class kernel_perceptron_learner():
         clear_btn = ttk.Button(fr_sw)
 
         # キャンバス
-        self.canvas_size = 500
+        self.canvas_size = 400
         self.canvas = tk.Canvas(fr_canvas, width=self.canvas_size, height=self.canvas_size, bg='white')
         self.canvas.bind('<Button-1>', lambda event:self.click_left(event))   # 左クリックのイベントを設定
         self.canvas.bind('<Button-3>', lambda event:self.click_right(event))  # 右クリックのイベントを設定
@@ -66,6 +68,72 @@ class kernel_perceptron_learner():
                                                     command=lambda:self.change_dot_type_to_CatAndDog())
         p_type_rbtn2.grid(row=1, column=3)
 
+        #### #### 中央 #### ####
+        # パーセプトロンの図用のフレーム
+        fr_figure = tk.LabelFrame(fr_c, bd=2, relief='groove', text='パーセプトロン（手動調節）')
+        fr_figure.pack(padx=5, pady=2, fill='x')
+
+        # パーセプトロンの図
+        self.figure = tk.Canvas(fr_figure, width=400, height=300, bd=2, relief='ridge', bg='white')
+        self.figure.pack(padx=5, pady=2)
+
+        # スライダー
+        fr_sliders = tk.Frame(fr_figure)
+        fr_sliders.pack(padx=5, pady=8, fill='x')
+
+        # スライダー a
+        self.slider_a_label_val = tk.StringVar()                                            # ラベルの変数
+        self.slider_a_label_val.set('    a = +0.00 ：  ')
+        self.slider_a_label = tk.Label(fr_sliders, textvariable=self.slider_a_label_val)    # ラベル
+        self.slider_a_label.grid(row=1, column=1, sticky=tk.E)
+        self.slider_a_val = tk.DoubleVar()                                                  # スライダーの変数
+        self.slider_a = ttk.Scale(fr_sliders, variable=self.slider_a_val,
+                                orient='horizontal', length=250, from_=-1, to=1,
+                                command=lambda v: self.slider_a_label_val.set('    a = %+.2f ：  ' % float(v))
+                            )                                                               # スライダー
+        self.slider_a.grid(row=1, column=2)
+
+        # スライダー b
+        self.slider_b_label_val = tk.StringVar()                                            # ラベルの変数
+        self.slider_b_label_val.set('    b = +0.00 ：  ')
+        self.slider_b_label = tk.Label(fr_sliders, textvariable=self.slider_b_label_val)    # ラベル
+        self.slider_b_label.grid(row=2, column=1, sticky=tk.E)
+        self.slider_b_val = tk.DoubleVar()                                                  # スライダーの変数
+        self.slider_b = ttk.Scale(fr_sliders, variable=self.slider_b_val,
+                                orient='horizontal', length=250, from_=-1, to=1,
+                                command=lambda v: self.slider_b_label_val.set('    b = %+.2f ：  ' % float(v))
+                            )                                                               # スライダー
+        self.slider_b.grid(row=2, column=2)
+
+        # スライダー c
+        self.slider_c_label_val = tk.StringVar()                                            # ラベルの変数
+        self.slider_c_label_val.set('    c = +0.00 ：  ')
+        self.slider_c_label = tk.Label(fr_sliders, textvariable=self.slider_c_label_val)    # ラベル
+        self.slider_c_label.grid(row=3, column=1, sticky=tk.E)
+        self.slider_c_val = tk.DoubleVar()                                                  # スライダーの変数
+        self.slider_c = ttk.Scale(fr_sliders, variable=self.slider_c_val,
+                                orient='horizontal', length=250, from_=-1, to=1,
+                                command=lambda v: self.slider_c_label_val.set('    c = %+.2f ：  ' % float(v))
+                            )                                                               # スライダー
+        self.slider_c.grid(row=3, column=2)
+
+        # スライダー d
+        self.slider_d_label_val = tk.StringVar()                                            # ラベルの変数
+        self.slider_d_label_val.set('    d = +0.00 ：  ')
+        self.slider_d_label = tk.Label(fr_sliders, textvariable=self.slider_d_label_val)    # ラベル
+        self.slider_d_label.grid(row=4, column=1, sticky=tk.E)
+        self.slider_d_val = tk.DoubleVar()                                                  # スライダーの変数
+        self.slider_d = ttk.Scale(fr_sliders, variable=self.slider_d_val,
+                                orient='horizontal', length=250, from_=-1, to=1,
+                                command=lambda v: self.slider_d_label_val.set('    d = %+.2f ：  ' % float(v))
+                            )                                                               # スライダー
+        self.slider_d.grid(row=4, column=2)
+
+        # 更新
+        self.update_btn = ttk.Button(fr_figure)
+        self.update_btn.configure(text='更新', width=10, command=lambda:self.update_canvas_and_figure())
+        self.update_btn.pack(padx=5, pady=10)
+
         #### #### 右側 #### ####
         # オプション設定
         fr_opt = tk.LabelFrame(fr_r, bd=2, relief='groove', text='学習オプション')
@@ -77,31 +145,41 @@ class kernel_perceptron_learner():
         self.opt1_feature = tk.StringVar()                              # 特徴量の取得用変数
         self.opt1_feature.set('2d')
 
-        opt1_rbtn1 = ttk.Radiobutton(fr_opt1, variable=self.opt1_feature, value='2d', text='2個 (直線)')
+        opt1_rbtn1 = ttk.Radiobutton(fr_opt1, variable=self.opt1_feature,
+                                        value='2d', text='2個 + バイアス',
+                                        command=lambda:self.enable_feature2D())
         opt1_rbtn1.grid(row=1, column=1, sticky=tk.W)
         opt1_feature2D_label = tk.Label(fr_opt1, text=' 式 = ')         # 特徴量の式のラベル
         opt1_feature2D_label.grid(row=1, column=2, sticky=tk.E)
         self.opt1_feature2D_formula = tk.Entry(fr_opt1)                 # 特徴量の式
+        self.opt1_feature2D_formula.configure(width=10)
         self.opt1_feature2D_formula.grid(row=1, column=3)
-        opt1_feature2D_label.configure(state='disabled')                #### 無効化
-        self.opt1_feature2D_formula.configure(state='disabled')         #### 無効化
 
-        opt1_rbtn2 = ttk.Radiobutton(fr_opt1, variable=self.opt1_feature, value='3d', text='3個 (平面)')
+        opt1_rbtn2 = ttk.Radiobutton(fr_opt1, variable=self.opt1_feature,
+                                        value='3d', text='3個 + バイアス',
+                                        command=lambda:self.enable_feature3D())
         opt1_rbtn2.grid(row=2, column=1, sticky=tk.W)
         opt1_feature3D_label = tk.Label(fr_opt1, text=' 式 = ')         # 特徴量の式のラベル
         opt1_feature3D_label.grid(row=2, column=2, sticky=tk.E)
         self.opt1_feature3D_formula = tk.Entry(fr_opt1)                 # 特徴量の式
+        self.opt1_feature3D_formula.configure(width=10)
         self.opt1_feature3D_formula.grid(row=2, column=3)
-        opt1_rbtn2.configure(state='disabled')                          #### 無効化
-        opt1_feature3D_label.configure(state='disabled')                #### 無効化
-        self.opt1_feature3D_formula.configure(state='disabled')         #### 無効化
 
-        opt1_rbtn3 = ttk.Radiobutton(fr_opt1, variable=self.opt1_feature, value='gauss', text='カーネル法 (超平面) ： ガウス')
+        opt1_rbtn3 = ttk.Radiobutton(fr_opt1, variable=self.opt1_feature,
+                                        value='gauss', text='カーネル法 ： ガウス',
+                                        command=lambda:self.enable_featureGauss())
         opt1_rbtn3.grid(row=3, column=1, sticky=tk.W)
         opt1_featureGauss_sigma2 = tk.Label(fr_opt1, text='   σ^2 = ')  # 特徴量の式のラベル
         opt1_featureGauss_sigma2.grid(row=3, column=2, sticky=tk.E)
         self.opt1_featureGauss_sigma2 = tk.Entry(fr_opt1)               # 特徴量の式
+        self.opt1_featureGauss_sigma2.configure(width=10)
         self.opt1_featureGauss_sigma2.grid(row=3, column=3)
+
+        opt1_feature2D_label.configure(state='disabled')                #### 無効化
+        self.opt1_feature2D_formula.configure(state='disabled')         #### 無効化
+        opt1_rbtn2.configure(state='disabled')                          #### 無効化
+        opt1_feature3D_label.configure(state='disabled')                #### 無効化
+        self.opt1_feature3D_formula.configure(state='disabled')         #### 無効化
 
         # オプション4
         fr_opt4 = tk.LabelFrame(fr_opt, relief='flat', text='【テストデータの割合】',)
@@ -139,52 +217,54 @@ class kernel_perceptron_learner():
 
         # 学習開始ボタン
         start_btn = ttk.Button(fr_r)
-        start_btn.configure(text='学習開始', width=15, command=lambda:self.start_learning())
+        start_btn.configure(text='学習開始（自動）', width=20, command=lambda:self.start_learning())
         start_btn.pack(padx=5, pady=12)
 
         # ログ画面
         fr_log = tk.LabelFrame(fr_r, bd=2, relief='flat', text='ログ')
         fr_log.pack(padx=5, pady=5, fill='x')
         self.logbox = tk.Listbox(fr_log, font=('TkDefaultFont', 10))
-        self.logbox.configure(height=10, width=80)
+        self.logbox.configure(height=10, width=55)
         self.logbox.pack(padx=5, pady=5)
 
         #### #### すべての設定終了後の操作 #### ####
-        self.init_canvas()      # キャンバス初期化，データセット初期化
+        self.init_canvas()  # キャンバス初期化，データセット初期化
 
         # 点の描画用画像の読み込み
-        img_dog = Image.open("./image/dog.png")
-        img_dog = img_dog.resize((35, 35))
+        dot_size = int(self.canvas_size * 0.07)
+        img_dog = Image.open('./image/dog.png')
+        img_dog = img_dog.resize((dot_size, dot_size))
         self.img_dog = ImageTk.PhotoImage(img_dog)
-        img_cat = Image.open("./image/cat.png")
-        img_cat = img_cat.resize((35, 35))
+        img_cat = Image.open('./image/cat.png')
+        img_cat = img_cat.resize((dot_size, dot_size))
         self.img_cat = ImageTk.PhotoImage(img_cat)
 
         # 点の描画タイプを設定
         if self.p_type.get() == 'cat_and_dog':
             self.dot_A = self.dot_A_dog
             self.dot_B = self.dot_B_cat
-        else:
+        else: # self.p_type.get() == 'point'
             self.dot_A = self.dot_A_point
             self.dot_B = self.dot_B_point
+
+        # パーセプトロンの描画
+        if self.opt1_feature.get() == '2d':
+            self.enable_feature2D()
+        elif self.opt1_feature.get() == '3d':
+            self.enable_feature3D()
+        elif self.opt1_feature.get() == 'gauss':
+            self.enable_featureGauss()
+        else:
+            raise Exception('feature is not proper')
 
         win.mainloop()          # ループに入る
 
     ###########################################################################
 
-    # ログを出力するメソッド
-    def print_log(self, *args):
-        if len(args) == 0:
-            return
-        string = args[0]
-        for arg in args[1:]:
-            string += ' ' + arg
-        self.logbox.insert(0, string)
-
     # キャンバスをクリアしてグリッドを描画するメソッド
     def init_canvas(self):
         # 描画されているものをすべて削除
-        self.canvas.delete("all")
+        self.canvas.delete('all')
 
         # データセットの初期化
         self.data1 = np.empty((0,2), int)
@@ -222,7 +302,8 @@ class kernel_perceptron_learner():
 
     # キャンバスの内容を再描画するメソッド
     def redraw(self):
-        self.canvas.delete("all")   # 描画されているものをすべて削除
+        self.canvas.delete('all')   # 描画されているものをすべて削除
+        self.draw_back()            # バックの色を描画
         self.draw_grid()            # グリッド線を描画
         for x, y in self.data1:     # data1を描画
             self.dot_A(x, y)
@@ -280,7 +361,7 @@ class kernel_perceptron_learner():
 
     # 保存ボタン用：描画されたデータ点をデータセットとして保存するメソッド
     def save_data(self):
-        filename = tkFileDialog.asksaveasfilename(filetypes=[("npzファイル","*.npz")], initialdir="./dataset/")
+        filename = tkFileDialog.asksaveasfilename(filetypes=[('npzファイル','*.npz')], initialdir='./dataset/')
         if filename == '':
             return # キャンセル
         self.print_log('save:', filename)
@@ -293,16 +374,240 @@ class kernel_perceptron_learner():
     # クリアボタン用：描画されたデータ点をすべて消すメソッド
     def clear_data(self):
         self.print_log('clear all')
-        self.init_canvas()
+        self.disc_func = None           # 識別関数の設定を消去
+        self.draw_back = lambda : None  # キャンバスの背面描画の関数を登録(何もしない関数)
+        self.init_canvas()              # キャンバスを再度初期化
+
+    ###########################################################################
+
+    # 更新ボタン用：スライダーの値を読み込み、それをデータキャンバスとパーセプトロンの図に反映させるメソッド
+    def update_canvas_and_figure(self):
+        if self.opt1_feature.get() == '2d':
+            # パーセプトロンの図の現在の入力線を消す
+            self.figure.delete(self.figure_line_in1)
+            self.figure.delete(self.figure_line_in2)
+            self.figure.delete(self.figure_line_in3)
+
+            # スライダーからパラメータを取得
+            a = self.slider_a_val.get()
+            b = self.slider_b_val.get()
+            c = self.slider_c_val.get()
+
+            # パラメータに応じてパーセプトロンの図の入力線を引く
+            self.figure_line_in1 = self.draw_perceptron_input_line(70,  80, 190, 140, a)
+            self.figure_line_in2 = self.draw_perceptron_input_line(70, 150, 190, 150, b)
+            self.figure_line_in3 = self.draw_perceptron_input_line(70, 220, 190, 160, c)
+
+            # 識別関数を背景に描画するための関数を登録し、再描画
+            if (a, b, c) == (0, 0, 0):
+                self.disc_func = None           # 識別関数の設定を消去
+                self.redraw()                   # キャンバスの再描画
+            else:
+                def disc_func(x, y):
+                    val = np.array(a*x+b*y+c)
+                    val[val>=0] = 1             # if val >= 0, label is  1
+                    val[val<0] = -1             # if val <  0, label is -1
+                    return val
+                self.disc_func = disc_func
+                self.set_draw_back_function()   # 識別関数を描画するように登録
+                self.redraw()                   # キャンバスの再描画
+
+        elif self.opt1_feature.get() == '3d':
+            raise Exception('feature 3d is not implemented')
+
+        elif self.opt1_feature.get() == 'gauss':
+            if self.disc_func == None:
+                self.print_log('ERROR: 学習をまだ行っていません')
+                return # キャンセル
+            self.set_draw_back_function()       # 識別関数を描画するように登録
+            self.redraw()                       # キャンバスの再描画
+
+        else:
+            raise Exception('feature is not proper')
+
+        # 最後にテストを実行
+        self.test_disc_function()
+
+    # パーセプトロンの入力線を書くためのメソッド
+    def draw_perceptron_input_line(self, x1, y1, x2, y2, param):
+        if param == 0:
+            return self.figure.create_line(x1, y1, x2, y2, fill='grey', width=2)
+        elif param > 0:
+            return self.figure.create_line(x1, y1, x2, y2, fill='red', width=int(param*10))
+        else:
+            return self.figure.create_line(x1, y1, x2, y2, fill='blue', width=int(abs(param)*10))
+
+    # 識別関数を背景描画の関数として登録するメソッド
+    def set_draw_back_function(self):
+        if self.disc_func == None:
+            raise Exception('disc_func is not registed')
+
+        # 指定されている解像度を取り出す
+        resolution = int(self.opt5_resolution.get())
+
+        # 識別関数の値を計算
+        x = np.linspace(-1, 1, resolution)
+        y = np.linspace(-1, 1, resolution)
+        X, Y = np.meshgrid(x, -y)           # y軸がcanvasでは反転している関係で、ここでyを反転
+        f = self.disc_func(X, Y)
+
+        # 背景描画用の関数を設計し、それを登録
+        def draw_back():
+            box_size = self.canvas_size / resolution
+            for i in range(resolution):
+                for j in range(resolution):
+                    if f[j][i] >= 0:
+                        color = 'yellow'
+                    else:
+                        color = 'purple'
+                    self.canvas.create_rectangle(i*box_size, j*box_size, (i+1)*box_size, (j+1)*box_size, fill=color, width=0)
+        self.draw_back = draw_back  # 作成した関数を登録
+
+    # 識別関数の精度を計算して表示するメソッド
+    def test_disc_function(self):
+        if self.disc_func == None:
+            self.print_log('学習をまだ行っていません')
+            return # キャンセル
+
+        # 座標系を通常の座標に変換
+        np_data1 = self.transform_coordinate_system_from_canvas(self.data1)
+        np_data2 = self.transform_coordinate_system_from_canvas(self.data2)
+
+        # Accuracyを計算
+        count = 0
+        for x, y in np_data1:
+            if self.disc_func(x, y) * -1 > 0:
+                count += 1
+        for x, y in np_data2:
+            if self.disc_func(x, y) * +1 > 0:
+                count += 1
+        total = len(self.data1) + len(self.data2)
+        if total == 0:
+            self.print_log(r'Accuracy: 100.00%')
+        else:
+            self.print_log('Accuracy: %.2f%%' % (count/total*100))
+
+    ###########################################################################
+
+    # 特徴量のラジオボタン用：特徴量2個を選択したときに、パーセプトロンの図を書き直すメソッド
+    def enable_feature2D(self):
+        # 図を全て削除
+        self.figure.delete('all')
+
+        # 識別関数・描画関数をクリア
+        self.disc_func = None           # 識別関数の設定を消去
+        self.draw_back = lambda : None  # キャンバスの背面描画の関数を登録(何もしない関数)
+        self.redraw()
+
+        # パーセプトロンを描画
+        self.figure.create_oval(190, 120, 250, 180, outline='grey', width=2)                    # 本体の丸
+        self.figure_line_in1 = self.figure.create_line(70,  80, 190, 140, fill='grey', width=2) # 入力の線
+        self.figure_line_in2 = self.figure.create_line(70, 150, 190, 150, fill='grey', width=2) # 入力の線
+        self.figure_line_in3 = self.figure.create_line(70, 220, 190, 160, fill='grey', width=2) # 入力の線
+        self.figure.create_line(250, 150, 320, 150, fill='grey', width=2)                       # 出力の線
+        self.figure.create_oval(65,  75, 75,  85, fill='green', width=0)                        # 入力の端の点
+        self.figure.create_oval(65, 145, 75, 155, fill='green', width=0)                        # 入力の端の点
+        self.figure.create_oval(65, 215, 75, 225, fill='green', width=0)                        # 入力の端の点
+        self.figure.create_oval(315, 145, 325, 155, fill='green', width=0)                      # 出力の端の点
+        self.figure.create_text(50,  80, text='x', fill='green', font=('Purisa', 20))           # 入力の文字
+        self.figure.create_text(50, 150, text='y', fill='green', font=('Purisa', 20))           # 入力の文字
+        self.figure.create_text(50, 220, text='1', fill='green', font=('Purisa', 20))           # 入力の文字
+        self.figure.create_text(320, 130, text='σ(ax+bx+c)', fill='green', font=('Purisa', 18)) # 出力の文字
+        self.figure.create_text(130,  95, text='a', fill='#FFA500', font=('Purisa', 20))        # パラメータ
+        self.figure.create_text(130, 135, text='b', fill='#FFA500', font=('Purisa', 20))        # パラメータ
+        self.figure.create_text(130, 175, text='c', fill='#FFA500', font=('Purisa', 20))        # パラメータ
+
+        # スライダーの文字を切り替え
+        self.slider_a_val.set(0)
+        self.slider_b_val.set(0)
+        self.slider_c_val.set(0)
+        self.slider_d_val.set(0)
+        self.slider_a_label_val.set('    a = +0.00 ：  ')
+        self.slider_b_label_val.set('    b = +0.00 ：  ')
+        self.slider_c_label_val.set('    c = +0.00 ：  ')
+        self.slider_d_label_val.set('    d = +0.00 ：  ')
+
+        # 図に関する動作をすべて有効化
+        self.slider_a_label.configure(state='active')
+        self.slider_b_label.configure(state='active')
+        self.slider_c_label.configure(state='active')
+        self.slider_d_label.configure(state='disabled')
+        self.slider_a.configure(state='active')
+        self.slider_b.configure(state='active')
+        self.slider_c.configure(state='active')
+        self.slider_d.configure(state='disabled')
+        self.update_btn.configure(state='active')
+
+    # 特徴量のラジオボタン用：特徴量3個を選択したときに、パーセプトロンの図を書き直すメソッド
+    def enable_feature3D(self):
+        pass
+
+    # 特徴量のラジオボタン用：ガウスカーネルのカーネル法を選択したときに、パーセプトロンの図を書き直すメソッド
+    def enable_featureGauss(self):
+        # 図を全て削除
+        self.figure.delete('all')
+
+        # 識別関数・描画関数をクリア
+        self.disc_func = None           # 識別関数の設定を消去
+        self.draw_back = lambda : None  # キャンバスの背面描画の関数を登録(何もしない関数)
+        self.redraw()
+
+        # パーセプトロンを描画
+        self.figure.create_oval(190, 120, 250, 180, outline='grey', width=2)                    # 本体の丸
+        self.figure.create_rectangle(100, 90, 160, 210, outline='grey', width=2)                # 特徴変換器の四角
+        self.figure.create_line(70, 115, 100, 115, fill='grey', width=2)                        # 入力の線
+        self.figure.create_line(70, 185, 100, 185, fill='grey', width=2)                        # 入力の線
+        self.figure.create_line(160,  98, 200, 125, fill='grey', width=2)                       # φの線
+        self.figure.create_line(160, 113, 196, 131, fill='grey', width=2)                       # φの線
+        self.figure.create_line(160, 128, 192, 138, fill='grey', width=2)                       # φの線
+        self.figure.create_line(160, 143, 190, 146, fill='grey', width=2)                       # φの線
+        self.figure.create_line(160, 157, 190, 154, fill='grey', width=2)                       # φの線
+        self.figure.create_line(160, 172, 192, 162, fill='grey', width=2)                       # φの線
+        self.figure.create_text(175, 182, text='︙', fill='grey', font=('Purisa', 14))          # ︙の文字
+        self.figure.create_line(160, 202, 200, 175, fill='grey', width=2)                       # φの線
+        self.figure.create_line(250, 150, 320, 150, fill='grey', width=2)                       # 出力の線
+        self.figure.create_oval(65, 110, 75, 120, fill='green', width=0)                        # 入力の端の点
+        self.figure.create_oval(65, 180, 75, 190, fill='green', width=0)                        # 入力の端の点
+        self.figure.create_oval(315, 145, 325, 155, fill='green', width=0)                      # 出力の端の点
+        self.figure.create_text(50, 115, text='x', fill='green', font=('Purisa', 20))           # 入力の文字
+        self.figure.create_text(50, 185, text='y', fill='green', font=('Purisa', 20))           # 入力の文字
+        self.figure.create_text(320, 130, text='σ(Σw_i・φ_i)', fill='green', font=('Purisa', 17))  # 出力の文字
+        self.figure.create_text(130, 140, text='特徴量\n変換器', fill='green', font=('Purisa', 14)) # 特徴量変換器の文字
+        self.figure.create_text(130, 170, text='φ', fill='green', font=('Purisa', 17))          # φの文字
+        self.figure.create_text(175, 150, text='w', fill='#FFA500', font=('Purisa', 20))        # パラメータ
+
+        # スライダーの文字を切り替え
+        self.slider_a_val.set(0)
+        self.slider_b_val.set(0)
+        self.slider_c_val.set(0)
+        self.slider_d_val.set(0)
+        self.slider_a_label_val.set('  w_1 = +0.00 ：  ')
+        self.slider_b_label_val.set('  w_2 = +0.00 ：  ')
+        self.slider_c_label_val.set('  w_3 = +0.00 ：  ')
+        self.slider_d_label_val.set('  . . . = +0.00 ：  ')
+
+        # 図に関する動作をすべて無効化
+        self.slider_a_label.configure(state='disabled')
+        self.slider_b_label.configure(state='disabled')
+        self.slider_c_label.configure(state='disabled')
+        self.slider_d_label.configure(state='disabled')
+        self.slider_a.configure(state='disabled')
+        self.slider_b.configure(state='disabled')
+        self.slider_c.configure(state='disabled')
+        self.slider_d.configure(state='disabled')
+        self.update_btn.configure(state='active')   # 更新だけできるようにしておく
+
+    ###########################################################################
 
     # 学習開始ボタン用：カーネルパーセプトロンの学習を開始するメソッド
     def start_learning(self):
         # 総データ数が異常でないかを確認
         if len(self.data1) + len(self.data2) == 0:
+            self.print_log('ERROR: データキャンバスにデータを入力してください')
             return # キャンセル
 
         # ログを出力
-        self.print_log('---------- Learning Start ----------')
+        self.print_log('------------------- Learning Start -------------------')
         self.print_log('dot type =',    self.p_type.get())
         self.print_log('data num:',
                         'total =',      str(len(self.data1)+len(self.data2)) + ',',
@@ -343,12 +648,36 @@ class kernel_perceptron_learner():
             kwargs['feature'] = '2d'
             result = kp.main(**kwargs)          # 実行
 
+            # パラメータを0~1の間に収めて、スライダーにセット
+            params = result['pc'].param
+            params = params / np.linalg.norm(params)
+            self.slider_a_val.set(params[1])
+            self.slider_b_val.set(params[2])
+            self.slider_c_val.set(params[0])
+            self.slider_a_label_val.set('    a = %+.2f ：  ' % params[1])
+            self.slider_b_label_val.set('    b = %+.2f ：  ' % params[2])
+            self.slider_c_label_val.set('    c = %+.2f ：  ' % params[0])
+
+        # データキャンバスに識別関数の最終結果を描画
+        self.disc_func = result['pc'].disc_func
+        self.update_canvas_and_figure()
+
         # 結果のログを出力
-        self.print_log('==== ==== Learning Finished ==== ====')
+        self.print_log('==== ==== ==== ==== Learning Finished ==== ==== ==== ====')
         self.print_log(result['msg'])
-        self.print_log('Accuracy: %.2f%%' % (result['accuracy']*100))
+        self.print_log('Test Accuracy: %.2f%%' % (result['accuracy']*100))
 
     ###########################################################################
+
+    # ログを出力するメソッド
+    def print_log(self, *args):
+        if len(args) == 0:
+            return
+        string = args[0]
+        for arg in args[1:]:
+            string += ' ' + arg
+        for i, top in enumerate(range(0, len(string), 70)):
+            self.logbox.insert(i, string[top:top+70])
 
     # 普通の座標からキャンバス用の座標に変換する
     def transform_coordinate_system_for_canvas(self, points):
