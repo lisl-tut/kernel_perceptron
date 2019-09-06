@@ -182,16 +182,16 @@ class kernel_perceptron_learner():
         self.opt1_feature3D_formula.configure(state='disabled')         #### 無効化
 
         # オプション4
-        fr_opt4 = tk.LabelFrame(fr_opt, relief='flat', text='【テストデータの割合】',)
-        fr_opt4.pack(padx=5, pady=4, fill='x')
+        # fr_opt4 = tk.LabelFrame(fr_opt, relief='flat', text='【テストデータの割合】',)
+        # fr_opt4.pack(padx=5, pady=4, fill='x')
         self.opt4_test_ratio = tk.StringVar()                           # テストデータの割合の取得用変数
         self.opt4_test_ratio.set('0.25')
-        opt4_rbtn1 = ttk.Radiobutton(fr_opt4, variable=self.opt4_test_ratio, value='0.1', text='10％')
-        opt4_rbtn1.grid(row=1, column=1)
-        opt4_rbtn2 = ttk.Radiobutton(fr_opt4, variable=self.opt4_test_ratio, value='0.25', text='25％')
-        opt4_rbtn2.grid(row=1, column=2)
-        opt4_rbtn3 = ttk.Radiobutton(fr_opt4, variable=self.opt4_test_ratio, value='0.5', text='50％')
-        opt4_rbtn3.grid(row=1, column=3)
+        # opt4_rbtn1 = ttk.Radiobutton(fr_opt4, variable=self.opt4_test_ratio, value='0.1', text='10％')
+        # opt4_rbtn1.grid(row=1, column=1)
+        # opt4_rbtn2 = ttk.Radiobutton(fr_opt4, variable=self.opt4_test_ratio, value='0.25', text='25％')
+        # opt4_rbtn2.grid(row=1, column=2)
+        # opt4_rbtn3 = ttk.Radiobutton(fr_opt4, variable=self.opt4_test_ratio, value='0.5', text='50％')
+        # opt4_rbtn3.grid(row=1, column=3)
 
         # オプション5
         fr_opt5 = tk.LabelFrame(fr_opt, relief='flat', text='【表示解像度】',)
@@ -206,14 +206,14 @@ class kernel_perceptron_learner():
         opt5_rbtn3.grid(row=1, column=3)
 
         # オプション6
-        fr_opt6 = tk.LabelFrame(fr_opt, relief='flat', text='【乱数】',)
-        fr_opt6.pack(padx=5, pady=4, fill='x')
-        self.opt6_random_seed = tk.StringVar()                          # 乱数の取得用変数
-        self.opt6_random_seed.set('fixed')
-        opt6_rbtn1 = ttk.Radiobutton(fr_opt6, variable=self.opt6_random_seed, value='fixed', text='無効')
-        opt6_rbtn1.grid(row=1, column=1)
-        opt6_rbtn2 = ttk.Radiobutton(fr_opt6, variable=self.opt6_random_seed, value='auto', text='有効')
-        opt6_rbtn2.grid(row=1, column=2)
+        # fr_opt6 = tk.LabelFrame(fr_opt, relief='flat', text='【乱数】',)
+        # fr_opt6.pack(padx=5, pady=4, fill='x')
+        # self.opt6_random_seed = tk.StringVar()                          # 乱数の取得用変数
+        # self.opt6_random_seed.set('fixed')
+        # opt6_rbtn1 = ttk.Radiobutton(fr_opt6, variable=self.opt6_random_seed, value='fixed', text='無効')
+        # opt6_rbtn1.grid(row=1, column=1)
+        # opt6_rbtn2 = ttk.Radiobutton(fr_opt6, variable=self.opt6_random_seed, value='auto', text='有効')
+        # opt6_rbtn2.grid(row=1, column=2)
 
         # 学習開始ボタン
         start_btn = ttk.Button(fr_r)
@@ -512,7 +512,7 @@ class kernel_perceptron_learner():
         self.figure.create_text(50,  80, text='x', fill='green', font=('Purisa', 20))           # 入力の文字
         self.figure.create_text(50, 150, text='y', fill='green', font=('Purisa', 20))           # 入力の文字
         self.figure.create_text(50, 220, text='1', fill='green', font=('Purisa', 20))           # 入力の文字
-        self.figure.create_text(320, 130, text='σ(ax+bx+c)', fill='green', font=('Purisa', 18)) # 出力の文字
+        self.figure.create_text(320, 130, text='σ(ax+by+c)', fill='green', font=('Purisa', 18)) # 出力の文字
         self.figure.create_text(130,  95, text='a', fill='#FFA500', font=('Purisa', 20))        # パラメータ
         self.figure.create_text(130, 135, text='b', fill='#FFA500', font=('Purisa', 20))        # パラメータ
         self.figure.create_text(130, 175, text='c', fill='#FFA500', font=('Purisa', 20))        # パラメータ
