@@ -295,6 +295,6 @@ def main(data1, data2, feature, test_ratio, resolution, random_seed, dot_type, *
     # 学習結果を返却
     acc = pc.test(test_data1, test_data2)
     if repeat < repeat_max:                                     # すべてのデータの学習が終了したとき
-        return {'msg':'Complete: repeat %d' % repeat, 'accuracy':acc}
+        return {'msg':'Complete: repeat %d' % repeat, 'accuracy':acc, 'pc':pc}
     else:                                                       # 繰り返し回数の上限に達したとき
-        return {'msg':'Reached the repeat limit %d' % repeat, 'accuracy':acc}
+        return {'msg':'Reached the repeat limit %d' % repeat, 'accuracy':acc, 'pc':pc}
